@@ -141,6 +141,8 @@ public interface DaoRepository<E> {
      */
     public void delete(E entity, String lockMode);
 
+    public void delete(Collection<E> entities);
+
     /**
      * Lock entity with lockMode.<br/>
      * 以指定的層級鎖定物件

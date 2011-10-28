@@ -104,29 +104,20 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
 
     @Override
     public Collection<E> save(final Collection<E> entities) {
-        getJpaTemplate().execute(new JpaCallback<Object>() {
+        return getJpaTemplate().execute(new JpaCallback<Collection<E>>() {
 
-            public Object doInJpa(EntityManager em) throws PersistenceException {
-                int i = 0;
+            public Collection<E> doInJpa(EntityManager em) throws PersistenceException {
                 for (E entity : entities) {
                     if (em.contains(entity)) {
                         em.merge(entity);
                     } else {
                         em.persist(entity);
                     }
-                    if (++i % 20 == 0) {
-                        em.flush();
-                        em.clear();
-                    }
                 }
-                if (++i % 20 > 0) {
-                    em.flush();
-                    em.clear();
-                }
-                return null;
+                em.flush();
+                return entities;
             }
         });
-        return entities;
     }
 
     @Override
@@ -169,26 +160,16 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
 
     @Override
     public Collection<E> merge(final Collection<E> entities) {
-        getJpaTemplate().execute(new JpaCallback<Object>() {
+        return getJpaTemplate().execute(new JpaCallback<Collection<E>>() {
 
-            public Object doInJpa(EntityManager em) throws PersistenceException {
-                int i = 0;
+            public Collection<E> doInJpa(EntityManager em) throws PersistenceException {
                 for (E entity : entities) {
                     em.merge(entity);
-                    if (++i % 20 == 0) {
-                        em.flush();
-                        em.clear();
-                    }
                 }
-                if (++i % 20 > 0) {
-                    em.flush();
-                    em.clear();
-                }
-                return null;
+                em.flush();
+                return entities;
             }
         });
-        return entities;
-
     }
 
     @Override
@@ -235,6 +216,19 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
             public Object doInJpa(EntityManager em) throws PersistenceException {
                 em.lock(em.merge(entity), getLockMode(lockMode));
                 em.remove(entity);
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void delete(final Collection<E> entities) {
+        getJpaTemplate().execute(new JpaCallback<Object>() {
+
+            public Object doInJpa(EntityManager em) throws PersistenceException {
+                for (E entity : entities) {
+                    em.remove(em.merge(entity));
+                }
                 return null;
             }
         });

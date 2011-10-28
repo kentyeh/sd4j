@@ -37,7 +37,7 @@
         <maven.compiler.optimize>true</maven.compiler.optimize>
         <org.springframework.version>3.0.6.RELEASE</org.springframework.version>
         <org.hibernate.version>3.6.7.Final</org.hibernate.version>
-        <slf4j.version>1.6.1</slf4j.version>
+        <slf4j.version>1.6.3</slf4j.version>
         <maven.test.skip>false</maven.test.skip>
     </properties>
 

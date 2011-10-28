@@ -251,6 +251,19 @@ public class AnnotherDaoRepository extends JpaDaoSupport implements DaoRepositor
     }
 
     @Override
+    public void delete(final Collection<Member> entities) {
+        getJpaTemplate().execute(new JpaCallback<Object>() {
+
+            public Object doInJpa(EntityManager em) throws PersistenceException {
+                for (Member entity : entities) {
+                    em.remove(em.merge(entity));
+                }
+                return null;
+            }
+        });
+    }
+
+    @Override
     public Member lock(final Member entity, final String lockMode) {
         return getJpaTemplate().execute(new JpaCallback<Member>() {
 
