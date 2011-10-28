@@ -124,6 +124,11 @@ public class RepositoryManager<E> {
         dao.delete(entity, lockMode);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public void remove(Collection<E> entities) {
+        dao.delete(entities);
+    }
+
     public E refresh(E entity) {
         return dao == null ? null : dao.refresh(entity);
     }
