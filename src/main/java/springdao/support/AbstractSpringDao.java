@@ -123,6 +123,7 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
     @Override
     public E persist(E entity) {
         getJpaTemplate().persist(entity);
+        getJpaTemplate().flush();
         return entity;
     }
 
@@ -142,6 +143,7 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
 
             public E doInJpa(EntityManager em) throws PersistenceException {
                 E result = em.merge(entity);
+                em.flush();
                 em.lock(em, getLockMode(lockMode));
                 return result;
             }
@@ -155,7 +157,9 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
 
     @Override
     public E merge(E entity) {
-        return getJpaTemplate().merge(entity);
+        E result =  getJpaTemplate().merge(entity);
+        getJpaTemplate().flush();
+        return result;
     }
 
     @Override
@@ -204,6 +208,7 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
 
             public Object doInJpa(EntityManager em) throws PersistenceException {
                 em.remove(em.merge(entity));
+                em.flush();
                 return null;
             }
         });
@@ -216,6 +221,7 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
             public Object doInJpa(EntityManager em) throws PersistenceException {
                 em.lock(em.merge(entity), getLockMode(lockMode));
                 em.remove(entity);
+                em.flush();
                 return null;
             }
         });
@@ -229,6 +235,7 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
                 for (E entity : entities) {
                     em.remove(em.merge(entity));
                 }
+                em.flush();
                 return null;
             }
         });
