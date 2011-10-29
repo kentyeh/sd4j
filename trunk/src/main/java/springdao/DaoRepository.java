@@ -39,7 +39,7 @@ public interface DaoRepository<E> {
 
     /**
      * Find entity with serializable primaryKey.<br/>
-     * 以註鍵找尋物件
+     * 以主鍵找尋物件
      * @param primaryKey  主鍵
      * @return 物件
      */

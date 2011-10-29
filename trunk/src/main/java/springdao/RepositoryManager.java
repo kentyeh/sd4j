@@ -10,7 +10,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Standard JPA does not support custom isolation levels, So we must declare {@link Transactional @Transactional} here.
+ * Do everything that {@link DaoRepository } do, it's main purpose is transaction management.<br/>
+ * Standard JPA does not support custom isolation levels, So we must declare {@link Transactional @Transactional} here.<br/>
+ * 封裝{@link DaoRepository}的功能，只是為了交易控制.
  * @author Kent Yeh
  */
 @Transactional(readOnly = true)
