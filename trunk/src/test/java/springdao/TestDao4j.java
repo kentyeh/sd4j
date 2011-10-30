@@ -14,6 +14,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import springdao.model.Member;
+import springdao.model.UserStore;
 import springdao.reposotory.RepositoryManagerExt;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -58,6 +59,7 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
     List<RepositoryManager<Member>> mms = new ArrayList<RepositoryManager<Member>>();
     @DaoManager(Phone.class)
     private RepositoryManager<Phone> phoneManager;
+    List<Member> lazys = new ArrayList<Member>();
 
     @Dao(value = Member.class, name = "annotherDao2")
     public void setAnotherDao2(AnnotherDaoRepository anotherDao2) {
@@ -119,10 +121,28 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
         for (RepositoryManager<Member> m : mms) {
             Member member = m.findFirstByCriteria("WHERE name like ?1", new StringBuilder("test").append("%").append(String.format("%02d", ++i)).toString());
             assertThat("select memberm failed", member, is(notNullValue()));
+            lazys.add(member);
         }
     }
 
     @Test(dependsOnMethods = "testSelect")
+    public void testReattachAndInitCollection() {
+        int i = 0;
+        for (RepositoryManager<Member> m : mms) {
+            Member lazy = lazys.get(i++);
+            m.initLazyCollection(lazy, "userstores");
+            assertThat("init lazy collection failed", lazy.getUserstores().size(), is(greaterThanOrEqualTo(0)));
+        }
+    }
+
+    @Test
+    public void testReattachAndInitCollection2() {
+        Member lazy = mmA.findFirstByCriteria("WHERE name=?1", "Jose");
+        mmA.initLazyCollection(lazy, "userstores");
+        assertThat("init lazy collection failed", lazy.getUserstores().size(), is(greaterThan(0)));
+    }
+
+    @Test(dependsOnMethods = "testReattachAndInitCollection")
     public void testModify() {
         List<Member> members = mmB.findByCriteria("WHERE name like 'testNew%' ORDER BY name");
         int i = 0;

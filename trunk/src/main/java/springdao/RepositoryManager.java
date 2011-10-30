@@ -269,4 +269,8 @@ public class RepositoryManager<E> {
     public List<Object> findListByNamedQuery(String name, Map<String, ?> parameters) {
         return dao == null ? null : dao.findListByNamedQuery(name, parameters);
     }
+
+    public E initLazyCollection(E entity, String collectionFieldName) {
+        return dao == null ? null : dao.initLazyCollection(entity, collectionFieldName);
+    }
 }

@@ -1,18 +1,24 @@
 package springdao.support;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.PersistenceException;
+import javax.persistence.PersistenceUnitUtil;
 import javax.persistence.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.orm.jpa.JpaCallback;
 import org.springframework.orm.jpa.support.JpaDaoSupport;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.ReflectionUtils;
 import springdao.DaoRepository;
 
 /**
@@ -157,7 +163,7 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
 
     @Override
     public E merge(E entity) {
-        E result =  getJpaTemplate().merge(entity);
+        E result = getJpaTemplate().merge(entity);
         getJpaTemplate().flush();
         return result;
     }
@@ -798,5 +804,54 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
                 return query.getResultList();
             }
         });
+    }
+
+    public E initLazyCollection(E entity, final String collectionFieldName) {
+        final AtomicBoolean found = new AtomicBoolean(false);
+        final String methodName = collectionFieldName.matches("^[a-z][A-Z]") ? collectionFieldName : collectionFieldName.length() > 1
+                ? collectionFieldName.substring(0, 1).toUpperCase() + collectionFieldName.substring(1) : collectionFieldName.toUpperCase();
+        final Object obj = entity;
+        return getJpaTemplate().execute(new JpaCallback<E>() {
+
+            public E doInJpa(final EntityManager em) throws PersistenceException {
+                ReflectionUtils.doWithMethods(getClazz(),
+                        new ReflectionUtils.MethodCallback() {
+
+                            public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+                                try {
+                                    Method setter = obj.getClass().getMethod("s" + method.getName().substring(1), method.getReturnType());
+                                    Object fieldObj = method.invoke(obj, new Object[]{});
+                                    if (fieldObj instanceof Collection) {
+                                        PersistenceUnitUtil puu = em.getEntityManagerFactory().getPersistenceUnitUtil();
+                                        if (!puu.isLoaded(obj, collectionFieldName)) {
+                                            E reattach = (E) em.merge(obj);
+//                                            E reattach = (E) em.find(obj.getClass(), puu.getIdentifier(obj));
+                                            fieldObj = method.invoke(reattach, new Object[]{});
+                                            ((Collection) fieldObj).size();
+                                            setter.invoke(obj, fieldObj);
+                                        }
+                                    }
+                                } catch (NoSuchMethodException ex) {
+                                    throw new PersistenceException("Setter " + getClazz().getSimpleName() + ".set" + methodName + "(...) not found.", ex);
+                                } catch (InvocationTargetException ex) {
+                                    throw new PersistenceException("Could not fetch Collection from " + getClazz().getSimpleName() + "." + method.getName(), ex);
+                                }
+                            }
+                        },
+                        new ReflectionUtils.MethodFilter() {
+
+                            public boolean matches(Method method) {
+                                if (found.get()) {
+                                    return false;
+                                } else {
+                                    found.set(method.getName().equals("get" + methodName) && method.getParameterTypes().length == 0
+                                            && ClassUtils.isAssignable(Collection.class, method.getReturnType()));
+                                    return found.get();
+                                }
+                            }
+                        });
+                return (E) obj;
+            }
+        }, true);
     }
 }

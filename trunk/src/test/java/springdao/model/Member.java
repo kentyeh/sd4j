@@ -53,7 +53,7 @@ public class Member implements Serializable {
     inverseJoinColumns = {
         @JoinColumn(name = "cid", referencedColumnName = "id")})
     private Set<Member> contacts;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner", fetch = FetchType.EAGER, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner", fetch = FetchType.LAZY, orphanRemoval = true)
     private List<UserStore> userstores;
     //It's very important to assign "cascade" attribute,without it the collection not to be saved.
     //重要:沒有指定"cascade"時，collection不會儲存
