@@ -365,4 +365,6 @@ public interface DaoRepository<E> {
     public List<Object> findListByNamedQuery(String name, Object... parameters);
 
     public List<Object> findListByNamedQuery(String name, Map<String, ?> parameters);
+
+    public E initLazyCollection(E entity, String collectionFieldName);
 }
