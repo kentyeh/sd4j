@@ -34,7 +34,7 @@ public @interface DaoManager {
      * {@link RepositoryManager} 相關的一般化類別
      * @return 
      */
-    Class value();
+    Class value() default Object.class;
 
     /**
      * {@link PlatformTransactionManager TransactionManager} bean's reference name;<br/>

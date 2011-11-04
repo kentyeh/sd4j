@@ -39,7 +39,7 @@ public @interface Dao {
      * {@link DaoRepository} 相關的一般化類別
      * @return 
      */
-    Class value();
+    Class value() default Object.class;
 
     /**
      * Deinfe {@link EntityManagerFactory} bean's name;<br/>

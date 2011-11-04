@@ -3,6 +3,8 @@ package springdao;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.persistence.EntityManagerFactory;
 import org.slf4j.Logger;
@@ -86,8 +88,23 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
 
             public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
                 final Dao dao = field.getAnnotation(Dao.class);
-                if (dao != null && dao.value() != null) {
-                    String daoName = StringUtils.hasText(dao.name()) ? dao.name() : dao.autoRegister() ? String.format("%sDao", convertName(dao.value().getSimpleName())) : null;
+
+                if (dao != null) {
+                    Class<?> genericType = dao == null ? null : dao.value().equals(Object.class) ? null : dao.value();
+                    if (genericType == null) {
+                        if (field.getGenericType() instanceof ParameterizedType) {
+                            ParameterizedType pt = (ParameterizedType) field.getGenericType();
+                            Type[] typeArguments = pt.getActualTypeArguments();
+                            if (typeArguments != null & typeArguments.length > 0) {
+                                genericType = (Class<?>) typeArguments[0];
+                            }
+                        }
+                    }
+                    if (genericType == null) {
+                        throw new IllegalArgumentException("@Dao field should assoicate a Generic ParameterizedType like DaoManager<Type> " + field.getName() + ";");
+                    }
+                    final Class<?> assoicateType = genericType;
+                    String daoName = StringUtils.hasText(dao.name()) ? dao.name() : dao.autoRegister() ? String.format("%sDao", convertName(assoicateType.getSimpleName())) : null;
                     DaoRepository<?> resultDao = daoName != null && !daoName.isEmpty() ? getBean(daoName, DaoRepository.class) : null;
                     if (resultDao == null) {
                         if (ClassUtils.isAssignable(field.getType(), AbstractSpringDao.class)) {
@@ -98,9 +115,9 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                                 public Class getClazz() {
                                     if (!isDebugExport) {
                                         isDebugExport = true;
-                                        logger.debug("{} @Dao annotate field and getClazz() return {}", bean.getClass().getSimpleName(), dao.value().getSimpleName());
+                                        logger.debug("{} @Dao annotate field and getClazz() return {}", bean.getClass().getSimpleName(), assoicateType.getSimpleName());
                                     }
-                                    return dao.value();
+                                    return assoicateType;
                                 }
                             };
                             ((JpaDaoSupport) resultDao).setEntityManagerFactory(context.getBean(dao.factory(), EntityManagerFactory.class));
@@ -123,19 +140,33 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                         }
                         if (StringUtils.hasText(daoName)) {
                             logger.debug("Build, inject field and register bean with {}@{}<{}>", new String[]{daoName,
-                                        resultDao.getClass().getSimpleName(), dao.value().getSimpleName()});
+                                        resultDao.getClass().getSimpleName(), assoicateType.getSimpleName()});
                             registerBean(daoName, resultDao);
                         } else {
-                            logger.debug("Build, and inject field with bean {}@{}<{}>", new String[]{daoName, resultDao.getClass().getSimpleName(), dao.value().getSimpleName()});
+                            logger.debug("Build, and inject field with bean {}@{}<{}>", new String[]{daoName, resultDao.getClass().getSimpleName(), assoicateType.getSimpleName()});
                         }
                     }
                     ReflectionUtils.makeAccessible(field);
                     field.set(bean, resultDao);
                 }
                 final DaoManager ormm = field.getAnnotation(DaoManager.class);
-                if (ormm != null && ormm.value() != null) {
+                if (ormm != null) {
+                    Class<?> genericType = ormm == null ? null : ormm.value().equals(Object.class) ? null : ormm.value();
+                    if (genericType == null) {
+                        if (field.getGenericType() instanceof ParameterizedType) {
+                            ParameterizedType pt = (ParameterizedType) field.getGenericType();
+                            Type[] typeArguments = pt.getActualTypeArguments();
+                            if (typeArguments != null & typeArguments.length > 0) {
+                                genericType = (Class<?>) typeArguments[0];
+                            }
+                        }
+                    }
+                    if (genericType == null) {
+                        throw new IllegalArgumentException("@DaoManager field should assoicate a Generic ParameterizedType like RepositoryManager<Type> " + field.getName() + ";");
+                    }
+                    final Class<?> assoicateType = genericType;
                     String mgrName = StringUtils.hasText(ormm.name()) ? ormm.name() : ormm.autoRegister()
-                            ? String.format("%sManager", convertName(ormm.value().getSimpleName())) : null;
+                            ? String.format("%sManager", convertName(assoicateType.getSimpleName())) : null;
                     RepositoryManager resultManager = mgrName != null && !mgrName.isEmpty() ? getBean(mgrName, RepositoryManager.class) : null;
                     Class<?> fc = field.getType();
                     if (resultManager == null) {
@@ -169,7 +200,7 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                                 ? ClassUtils.getShortName(field.getType()) : mgrName, field.getType(), ormm.baseManagerType());
                     } else if (resultManager.getDao() == null) {
                         String daoName = StringUtils.hasText(ormm.daoName()) ? ormm.daoName() : ormm.autoRegister()
-                                ? String.format("%sDao", convertName(ormm.value().getSimpleName())) : null;
+                                ? String.format("%sDao", convertName(assoicateType.getSimpleName())) : null;
                         DaoRepository<?> resultDao = StringUtils.hasText(daoName) ? getBean(daoName, DaoRepository.class) : null;
                         if (resultDao == null) {
                             resultDao = new AbstractSpringDao() {
@@ -179,9 +210,9 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                                 public Class getClazz() {
                                     if (!isDebugExport) {
                                         isDebugExport = true;
-                                        logger.debug("{} @DaoManager annotate field and getClazz() return {}", bean.getClass().getSimpleName(), ormm.value().getSimpleName());
+                                        logger.debug("{} @DaoManager annotate field and getClazz() return {}", bean.getClass().getSimpleName(), assoicateType.getSimpleName());
                                     }
-                                    return ormm.value();
+                                    return assoicateType;
                                 }
                             };
                             ((JpaDaoSupport) resultDao).setEntityManagerFactory(context.getBean(ormm.factory(), EntityManagerFactory.class));
@@ -208,10 +239,25 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                 Class<?> fc = parmatypes.length > 0 ? parmatypes[0] : null;
 
                 final Dao dao = method.getAnnotation(Dao.class);
-                if (dao != null && dao.value() != null && fc != null && void.class.equals(method.getReturnType())
+                if (dao != null && fc != null && void.class.equals(method.getReturnType())
                         && ClassUtils.isAssignable(DaoRepository.class, fc)) {
+                    Class<?> genericType = dao == null ? null : dao.value().equals(Object.class) ? null : dao.value();
+                    if (genericType == null) {
+                        Type[] genericParameterTypes = method.getGenericParameterTypes();
+                        if (genericParameterTypes[0] instanceof ParameterizedType) {
+                            ParameterizedType aType = (ParameterizedType) genericParameterTypes[0];
+                            Type[] parameterArgTypes = aType.getActualTypeArguments();
+                            if (parameterArgTypes.length == 1) {
+                                genericType = (Class<?>) parameterArgTypes[0];
+                            }
+                        }
+                    }
+                    if (genericType == null) {
+                        throw new IllegalArgumentException("@Dao Method should assoicate a Generic ParameterizedType like " + method.getName() + "(DaoRepository<Type>)");
+                    }
+                    final Class<?> assoicateType = genericType;
                     String daoName = StringUtils.hasText(dao.name()) ? dao.name() : dao.autoRegister()
-                            ? String.format("%sDao", convertName(dao.value().getSimpleName())) : null;
+                            ? String.format("%sDao", convertName(assoicateType.getSimpleName())) : null;
                     DaoRepository<?> resultDao = daoName != null && !daoName.isEmpty() ? getBean(daoName, DaoRepository.class) : null;
                     if (resultDao == null) {
                         if (ClassUtils.isAssignable(fc, AbstractSpringDao.class)) {
@@ -222,9 +268,9 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                                 public Class getClazz() {
                                     if (!isDebugExport) {
                                         isDebugExport = true;
-                                        logger.debug("{} @Dao annotate field and getClazz() return {}", bean.getClass().getSimpleName(), dao.value().getSimpleName());
+                                        logger.debug("{} @Dao annotate field and getClazz() return {}", bean.getClass().getSimpleName(), assoicateType.getSimpleName());
                                     }
-                                    return dao.value();
+                                    return assoicateType;
                                 }
                             };
                             ((JpaDaoSupport) resultDao).setEntityManagerFactory(context.getBean(dao.factory(), EntityManagerFactory.class));
@@ -256,10 +302,25 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                     }
                 }
                 final DaoManager ormm = method.getAnnotation(DaoManager.class);
-                if (ormm != null && ormm.value() != null && fc != null && void.class.equals(method.getReturnType())
+                if (ormm != null && fc != null && void.class.equals(method.getReturnType())
                         && (ClassUtils.isAssignable(fc, ormm.baseManagerType()) || ClassUtils.isAssignable(ormm.baseManagerType(), fc))) {
+                    Class<?> genericType = ormm == null ? null : ormm.value().equals(Object.class) ? null : ormm.value();
+                    if (genericType == null) {
+                        Type[] genericParameterTypes = method.getGenericParameterTypes();
+                        if (genericParameterTypes[0] instanceof ParameterizedType) {
+                            ParameterizedType aType = (ParameterizedType) genericParameterTypes[0];
+                            Type[] parameterArgTypes = aType.getActualTypeArguments();
+                            if (parameterArgTypes.length == 1) {
+                                genericType = (Class<?>) parameterArgTypes[0];
+                            }
+                        }
+                    }
+                    if (genericType == null) {
+                        throw new IllegalArgumentException("@DaoMethod Method should assoicate a Generic ParameterizedType like " + method.getName() + "(RepositoryManager<Type>)");
+                    }
+                    final Class<?> assoicateType = genericType;
                     String mgrName = StringUtils.hasText(ormm.name()) ? ormm.name() : ormm.autoRegister()
-                            ? String.format("%sManager", convertName(ormm.value().getSimpleName())) : null;
+                            ? String.format("%sManager", convertName(assoicateType.getSimpleName())) : null;
                     RepositoryManager resultManager = StringUtils.hasText(mgrName) ? getBean(mgrName, RepositoryManager.class) : null;
                     if (resultManager == null) {
                         if (ClassUtils.isAssignable(ormm.baseManagerType(), fc)) {
@@ -291,7 +352,7 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                                 ? ClassUtils.getShortName(fc) : mgrName, ormm.baseManagerType(), fc);
                     } else if (resultManager.getDao() == null) {
                         String daoName = StringUtils.hasText(ormm.daoName()) ? ormm.daoName() : ormm.autoRegister()
-                                ? String.format("%sDao", convertName(ormm.value().getSimpleName())) : null;
+                                ? String.format("%sDao", convertName(assoicateType.getSimpleName())) : null;
                         DaoRepository<?> resultDao = StringUtils.hasText(daoName) ? getBean(daoName, DaoRepository.class) : null;
                         if (resultDao == null) {
                             resultDao = new AbstractSpringDao() {
@@ -301,9 +362,9 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                                 public Class getClazz() {
                                     if (!isDebugExport) {
                                         isDebugExport = true;
-                                        logger.debug("{} @DaoManager annotate field and getClazz() return {}", bean.getClass().getSimpleName(), ormm.value().getSimpleName());
+                                        logger.debug("{} @DaoManager annotate field and getClazz() return {}", bean.getClass().getSimpleName(), assoicateType.getSimpleName());
                                     }
-                                    return ormm.value();
+                                    return assoicateType;
                                 }
                             };
                             ((JpaDaoSupport) resultDao).setEntityManagerFactory(context.getBean(ormm.factory(), EntityManagerFactory.class));

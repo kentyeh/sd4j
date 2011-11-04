@@ -35,25 +35,25 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
     @Dao(value = Member.class, name = "annotherDao1")
     private AnnotherDaoRepository anotherDao1;
     private AnnotherDaoRepository anotherDao2;
-    @DaoManager(value = Member.class, name = "MM1", daoName = "annotherDao1")
+    @DaoManager(name = "MM1", daoName = "annotherDao1")
     private RepositoryManager<Member> mm1;
-    @DaoManager(value = Member.class, name = "MM2", baseManagerType = RepositoryManagerExt.class)
+    @DaoManager(name = "MM2", baseManagerType = RepositoryManagerExt.class)
     private RepositoryManager<Member> mm2;
-    @DaoManager(value = Member.class, name = "MM3")
+    @DaoManager(name = "MM3")
     private RepositoryManagerExt<Member> mm3;
-    @DaoManager(value = Member.class, name = "MM4", baseManagerType = RepositoryManagerExt.class)
+    @DaoManager(name = "MM4", baseManagerType = RepositoryManagerExt.class)
     private RepositoryManagerExt<Member> mm4;
-    @DaoManager(value = Member.class, name = "MM5", baseManagerType = AnnotatedRepositoryManager.class)
+    @DaoManager(name = "MM5", baseManagerType = AnnotatedRepositoryManager.class)
     private RepositoryManager<Member> mm5;
-    @DaoManager(value = Member.class, name = "MM6", baseManagerType = AnnotatedRepositoryManagerExt.class)
+    @DaoManager(name = "MM6", baseManagerType = AnnotatedRepositoryManagerExt.class)
     private RepositoryManager<Member> mm6;
-    @DaoManager(value = Member.class, name = "MM7")
+    @DaoManager(name = "MM7")
     private AnnotatedRepositoryManager<Member> mm7;
-    @DaoManager(value = Member.class, name = "MM8")
+    @DaoManager(name = "MM8")
     private AnnotatedRepositoryManagerExt<Member> mm8;
-    @DaoManager(value = Member.class, name = "MM9", baseManagerType = AnnotatedRepositoryManagerExt.class)
+    @DaoManager(name = "MM9", baseManagerType = AnnotatedRepositoryManagerExt.class)
     private AnnotatedRepositoryManager<Member> mm9;
-    @DaoManager(value = Member.class, name = "MMA", baseManagerType = AnnotatedRepositoryManager.class)
+    @DaoManager(name = "MMA", baseManagerType = AnnotatedRepositoryManager.class)
     private AnnotatedRepositoryManagerExt<Member> mmA;
     private RepositoryManager<Member> mmB;
     List<RepositoryManager<Member>> mms = new ArrayList<RepositoryManager<Member>>();
@@ -66,7 +66,7 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
         this.anotherDao2 = anotherDao2;
     }
 
-    @DaoManager(value = Member.class, name = "MMB", baseManagerType = AnnotatedRepositoryManager.class)
+    @DaoManager(name = "MMB", baseManagerType = AnnotatedRepositoryManager.class)
     public void setMmB(RepositoryManager<Member> mmB) {
         this.mmB = mmB;
     }
