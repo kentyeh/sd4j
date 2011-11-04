@@ -61,4 +61,10 @@ public @interface Dao {
      * @return 
      */
     boolean autoRegister() default true;
+
+    /**
+     * Always true,compatibility for <a href="http://code.google.com/p/sd4o/">sd4o</a>
+     * @return 
+     */
+    boolean jpql() default true;
 }
