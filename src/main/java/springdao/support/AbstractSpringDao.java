@@ -617,23 +617,23 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
     }
 
     @Override
-    public Object findUniqueByQL(final String QL) {
-        return getJpaTemplate().execute(new JpaCallback<Object>() {
+    public <T> T findUniqueByQL(final Class<T> clazz, final String QL) {
+        return getJpaTemplate().execute(new JpaCallback<T>() {
 
-            public Object doInJpa(EntityManager em) throws PersistenceException {
-                Query query = em.createQuery(QL);
+            public T doInJpa(EntityManager em) throws PersistenceException {
+                Query query = clazz==null?em.createQuery(QL):em.createQuery(QL,clazz);
                 getJpaTemplate().prepareQuery(query);
-                return query.getSingleResult();
+                return (T) query.getSingleResult();
             }
         });
     }
 
     @Override
-    public Object findUnique(final String QL, final Object... parameters) {
-        return getJpaTemplate().execute(new JpaCallback<Object>() {
+    public <T> T findUniqueByQL(final Class<T> clazz, final String QL, final Object... parameters) {
+        return getJpaTemplate().execute(new JpaCallback<T>() {
 
-            public Object doInJpa(EntityManager em) throws PersistenceException {
-                Query query = em.createQuery(QL);
+            public T doInJpa(EntityManager em) throws PersistenceException {
+                Query query = clazz==null?em.createQuery(QL):em.createQuery(QL,clazz);
                 getJpaTemplate().prepareQuery(query);
                 if (parameters != null && parameters.length > 0) {
                     int i = 0;
@@ -644,34 +644,34 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
                         }
                     }
                 }
-                return query.getSingleResult();
+                return (T) query.getSingleResult();
             }
         });
     }
 
     @Override
-    public Object findUnique(final String QL, final Map<String, ?> parameters) {
-        return getJpaTemplate().execute(new JpaCallback<Object>() {
+    public <T> T findUniqueByQL(final Class<T> clazz, final String QL, final Map<String, ?> parameters) {
+        return getJpaTemplate().execute(new JpaCallback<T>() {
 
-            public Object doInJpa(EntityManager em) throws PersistenceException {
-                Query query = em.createQuery(QL);
+            public T doInJpa(EntityManager em) throws PersistenceException {
+                Query query = clazz==null?em.createQuery(QL):em.createQuery(QL,clazz);
                 getJpaTemplate().prepareQuery(query);
                 if (parameters != null && !parameters.isEmpty()) {
                     for (String key : parameters.keySet()) {
                         query.setParameter(key, parameters.get(key));
                     }
                 }
-                return query.getSingleResult();
+                return (T) query.getSingleResult();
             }
         });
     }
 
     @Override
-    public List<Object> findListByQL(final String QL) {
-        return getJpaTemplate().execute(new JpaCallback<List<Object>>() {
+    public <T> List<T> findListByQL(final Class<T> clazz, final String QL) {
+        return getJpaTemplate().execute(new JpaCallback<List<T>>() {
 
-            public List<Object> doInJpa(EntityManager em) throws PersistenceException {
-                Query query = em.createNativeQuery(QL);
+            public List<T> doInJpa(EntityManager em) throws PersistenceException {
+                Query query = clazz==null?em.createQuery(QL):em.createQuery(QL,clazz);
                 getJpaTemplate().prepareQuery(query);
                 return query.getResultList();
             }
@@ -679,11 +679,11 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
     }
 
     @Override
-    public List<Object> findListByQL(final String QL, final Object... parameters) {
-        return getJpaTemplate().execute(new JpaCallback<List<Object>>() {
+    public <T> List<T> findListByQL(final Class<T> clazz, final String QL, final Object... parameters) {
+        return getJpaTemplate().execute(new JpaCallback<List<T>>() {
 
-            public List<Object> doInJpa(EntityManager em) throws PersistenceException {
-                Query query = em.createNativeQuery(QL);
+            public List<T> doInJpa(EntityManager em) throws PersistenceException {
+                Query query = clazz==null?em.createQuery(QL):em.createQuery(QL,clazz);
                 getJpaTemplate().prepareQuery(query);
                 if (parameters != null && parameters.length > 0) {
                     int i = 0;
@@ -700,11 +700,11 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
     }
 
     @Override
-    public List<Object> findListByQL(final String QL, final Map<String, ?> parameters) {
-        return getJpaTemplate().execute(new JpaCallback<List<Object>>() {
+    public <T> List<T> findListByQL(final Class<T> clazz, final String QL, final Map<String, ?> parameters) {
+        return getJpaTemplate().execute(new JpaCallback<List<T>>() {
 
-            public List<Object> doInJpa(EntityManager em) throws PersistenceException {
-                Query query = em.createNativeQuery(QL);
+            public List<T> doInJpa(EntityManager em) throws PersistenceException {
+                Query query = clazz==null?em.createQuery(QL):em.createQuery(QL,clazz);
                 getJpaTemplate().prepareQuery(query);
                 if (parameters != null && !parameters.isEmpty()) {
                     for (String key : parameters.keySet()) {
@@ -716,6 +716,7 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
         });
     }
 
+    @Override
     public List<E> findByNamedQuery(final String name) {
         return getJpaTemplate().executeFind(new JpaCallback<List<E>>() {
 
@@ -725,6 +726,7 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
         });
     }
 
+    @Override
     public List<E> findByNamedQuery(final String name, final Object... parameters) {
         return getJpaTemplate().executeFind(new JpaCallback<List<E>>() {
 
@@ -745,6 +747,7 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
         });
     }
 
+    @Override
     public List<E> findByNamedQuery(final String name, final Map<String, ?> parameters) {
         return getJpaTemplate().executeFind(new JpaCallback<List<E>>() {
 
@@ -761,19 +764,21 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
         });
     }
 
-    public List<Object> findListByNamedQuery(final String name) {
-        return getJpaTemplate().executeFind(new JpaCallback<List<Object>>() {
+    @Override
+    public <T> List<T> findListByNamedQuery(Class<T> clazz, final String name) {
+        return getJpaTemplate().executeFind(new JpaCallback<List<T>>() {
 
-            public List<Object> doInJpa(EntityManager em) throws PersistenceException {
+            public List<T> doInJpa(EntityManager em) throws PersistenceException {
                 return em.createNamedQuery(name).getResultList();
             }
         });
     }
 
-    public List<Object> findListByNamedQuery(final String name, final Object... parameters) {
-        return getJpaTemplate().executeFind(new JpaCallback<List<Object>>() {
+    @Override
+    public <T> List<T> findListByNamedQuery(Class<T> clazz, final String name, final Object... parameters) {
+        return getJpaTemplate().executeFind(new JpaCallback<List<T>>() {
 
-            public List<Object> doInJpa(EntityManager em) throws PersistenceException {
+            public List<T> doInJpa(EntityManager em) throws PersistenceException {
                 Query query = em.createNamedQuery(name);
                 getJpaTemplate().prepareQuery(query);
                 if (parameters != null && parameters.length > 0) {
@@ -790,10 +795,11 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
         });
     }
 
-    public List<Object> findListByNamedQuery(final String name, final Map<String, ?> parameters) {
-        return getJpaTemplate().executeFind(new JpaCallback<List<Object>>() {
+    @Override
+    public <T> List<T> findListByNamedQuery(Class<T> clazz, final String name, final Map<String, ?> parameters) {
+        return getJpaTemplate().executeFind(new JpaCallback<List<T>>() {
 
-            public List<Object> doInJpa(EntityManager em) throws PersistenceException {
+            public List<T> doInJpa(EntityManager em) throws PersistenceException {
                 Query query = em.createNamedQuery(name);
                 getJpaTemplate().prepareQuery(query);
                 if (parameters != null && !parameters.isEmpty()) {
@@ -806,6 +812,7 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
         });
     }
 
+    @Override
     public E initLazyCollection(E entity, final String collectionFieldName) {
         final AtomicBoolean found = new AtomicBoolean(false);
         final String methodName = collectionFieldName.matches("^[a-z][A-Z]") ? collectionFieldName : collectionFieldName.length() > 1

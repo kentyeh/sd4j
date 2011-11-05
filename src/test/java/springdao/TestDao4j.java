@@ -1,5 +1,6 @@
 package springdao;
 
+import springdao.model.SupplyChainMember;
 import java.util.HashSet;
 import springdao.model.Phone;
 import springdao.reposotory.AnnotherDaoRepository;
@@ -14,7 +15,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import springdao.model.Member;
-import springdao.model.UserStore;
 import springdao.reposotory.RepositoryManagerExt;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -23,6 +23,7 @@ import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
+import static org.hamcrest.core.AnyOf.anyOf;
 
 /**
  *
@@ -213,6 +214,51 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
             assertThat("Can't find by named query.", members.size(), is(greaterThan(0)));
             members = m.findByNamedQuery("Member.findNativeByName", "%os%");
             assertThat("Can't find by named query.", members.size(), is(greaterThan(0)));
+        }
+    }
+
+    @Test
+    public void testFindUniqueByQL() {
+        StringBuilder sb = new StringBuilder("SELECT COUNT(").append(mmB.getAliasName()).append(") FROM ").
+                append(mmB.getEntityName()).append(" AS ").append(mmB.getAliasName());
+        for (RepositoryManager<Member> m : mms) {
+            Long res = m.findUniqueByQL(Long.class, sb.toString());
+            assertThat("Users' count must grater zero", res.intValue(), is(greaterThan(0)));
+        }
+    }
+
+    @Test
+    public void testFindUniqueByQL2() {
+        StringBuilder sb = new StringBuilder("SELECT COUNT(").append(mmB.getAliasName()).append("),MAX(name) FROM ").
+                append(mmB.getEntityName()).append(" AS ").append(mmB.getAliasName());
+        for (RepositoryManager<Member> m : mms) {
+            Object[] res = m.findUniqueByQL(null, sb.toString());
+            assertThat("Multiple field query wrong", res.length, is(equalTo(2)));
+        }
+    }
+    
+    @Test
+    public void testFindListByQL() {
+        StringBuilder sb = new StringBuilder("SELECT ").append(mmB.getAliasName()).append(".id FROM ").append(mmB.getEntityName()).
+                append(" AS ").append(mmB.getAliasName());
+        for (RepositoryManager<Member> m : mms) {
+            List<Long> res = m.findListByQL(Long.class, sb.toString());
+            assertThat("Free QL query wrong", res.size(), is(greaterThan(0)));
+            assertThat("Free QL query wrong", res.get(0), is(greaterThanOrEqualTo(0l)));
+        }
+    }
+
+    @Test
+    public void testFindListByQL2() {
+        StringBuilder sb = new StringBuilder("SELECT ").append(mmB.getAliasName()).append(".name,").
+                append(mmB.getAliasName()).append(".userType FROM ").append(mmB.getEntityName()).
+                append(" AS ").append(mmB.getAliasName());
+        for (RepositoryManager<Member> m : mms) {
+            //When using Object[].class as input will report https://hibernate.onjira.com/browse/HHH-5348 this error
+            //List<Object[]> res = m.findListByQL(Object[].class, sb.toString());
+            List<Object[]> res = m.findListByQL(null, sb.toString());
+            assertThat("Free QL query wrong", res.size(), is(greaterThan(0)));
+            assertThat("Free QL query wrong", (SupplyChainMember) res.get(0)[1], is(anyOf(is(SupplyChainMember.C), is(SupplyChainMember.V), is(SupplyChainMember.W))));
         }
     }
 }

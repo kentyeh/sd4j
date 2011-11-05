@@ -348,23 +348,23 @@ public interface DaoRepository<E> {
 
     public List<E> findBySQLQuery(String sql, String entityAlias, Map<String, ?> parameters);
 
-    public Object findUniqueByQL(String QL);
+    public <T> T findUniqueByQL(Class<T> clazz, String QL);
 
-    public Object findUnique(String QL, Object... parameters);
+    public <T> T findUniqueByQL(Class<T> clazz, String QL, Object... parameters);
 
-    public Object findUnique(String QL, Map<String, ?> parameters);
+    public <T> T findUniqueByQL(Class<T> clazz, String QL, Map<String, ?> parameters);
 
-    public List<Object> findListByQL(String QL);
+    public <T> List<T> findListByQL(Class<T> clazz, String QL);
 
-    public List<Object> findListByQL(String QL, Object... parameters);
+    public <T> List<T> findListByQL(Class<T> clazz, String QL, Object... parameters);
 
-    public List<Object> findListByQL(String QL, Map<String, ?> parameters);
+    public <T> List<T> findListByQL(Class<T> clazz, String QL, Map<String, ?> parameters);
 
-    public List<Object> findListByNamedQuery(String name);
+    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name);
 
-    public List<Object> findListByNamedQuery(String name, Object... parameters);
+    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Object... parameters);
 
-    public List<Object> findListByNamedQuery(String name, Map<String, ?> parameters);
+    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Map<String, ?> parameters);
 
     public E initLazyCollection(E entity, String collectionFieldName);
 }
