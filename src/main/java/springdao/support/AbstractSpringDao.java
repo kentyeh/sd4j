@@ -40,6 +40,16 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
     }
 
     @Override
+    public boolean isJpql() {
+        return true;
+    }
+
+    @Override
+    public void setJpql(boolean jpql) {
+        //
+    }
+
+    @Override
     public E instanate() throws InstantiationException, IllegalAccessException {
         try {
             return getClazz().newInstance();
