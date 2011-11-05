@@ -46,6 +46,16 @@ public class AnnotherDaoRepository extends JpaDaoSupport implements DaoRepositor
     }
 
     @Override
+    public boolean isJpql() {
+        return false;
+    }
+
+    @Override
+    public void setJpql(boolean jpql) {
+        //
+    }
+
+    @Override
     public Member instanate() throws InstantiationException, IllegalAccessException {
         try {
             return getClazz().newInstance();

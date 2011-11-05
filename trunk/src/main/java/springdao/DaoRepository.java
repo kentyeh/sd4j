@@ -367,4 +367,8 @@ public interface DaoRepository<E> {
     public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Map<String, ?> parameters);
 
     public E initLazyCollection(E entity, String collectionFieldName);
+
+    public boolean isJpql();
+
+    public void setJpql(boolean jpql);
 }
