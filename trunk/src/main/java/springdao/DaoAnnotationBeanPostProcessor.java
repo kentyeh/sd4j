@@ -6,7 +6,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.persistence.EntityManagerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -22,11 +21,11 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.orm.jpa.support.JpaDaoSupport;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 import springdao.support.AbstractSpringDao;
+import springdao.support.SimpleSpringDao;
 
 /**
  *
@@ -108,19 +107,16 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                     DaoRepository<?> resultDao = daoName != null && !daoName.isEmpty() ? getBean(daoName, DaoRepository.class) : null;
                     if (resultDao == null) {
                         if (ClassUtils.isAssignable(field.getType(), AbstractSpringDao.class)) {
-                            resultDao = new AbstractSpringDao() {
-
-                                private boolean isDebugExport = false;
-
-                                public Class getClazz() {
-                                    if (!isDebugExport) {
-                                        isDebugExport = true;
-                                        logger.debug("{} @Dao annotate field and getClazz() return {}", bean.getClass().getSimpleName(), assoicateType.getSimpleName());
-                                    }
-                                    return assoicateType;
-                                }
-                            };
-                            ((JpaDaoSupport) resultDao).setEntityManagerFactory(context.getBean(dao.factory(), EntityManagerFactory.class));
+                            BeanDefinitionRegistry registry = (BeanDefinitionRegistry) regContext.getBeanFactory();
+                            GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
+                            beanDefinition.setBeanClass(SimpleSpringDao.class);
+                            beanDefinition.setLazyInit(false);
+                            beanDefinition.setAbstract(false);
+                            beanDefinition.setAutowireCandidate(true);
+                            beanDefinition.setScope(BeanDefinition.SCOPE_SINGLETON);
+                            beanDefinition.getConstructorArgumentValues().addIndexedArgumentValue(0, assoicateType);
+                            registry.registerBeanDefinition(daoName, beanDefinition);
+                            resultDao = (DaoRepository<?>) context.getBean(daoName);
                         } else if (ClassUtils.isAssignable(DaoRepository.class, field.getType())) {
                             BeanDefinitionRegistry registry = (BeanDefinitionRegistry) regContext.getBeanFactory();
                             GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
@@ -129,19 +125,14 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                             beanDefinition.setAbstract(false);
                             beanDefinition.setAutowireCandidate(true);
                             beanDefinition.setScope(BeanDefinition.SCOPE_SINGLETON);
-                            String def = "_" + String.valueOf(defcnt.getAndAdd(1));
-                            if (ClassUtils.isAssignable(JpaDaoSupport.class, field.getType())) {
-                                beanDefinition.getPropertyValues().add("entityManagerFactory", context.getBean(dao.factory(), EntityManagerFactory.class));
-                            }
-                            registry.registerBeanDefinition(daoName + def, beanDefinition);
-                            resultDao = (DaoRepository<?>) context.getBean(daoName + def);
+                            registry.registerBeanDefinition(daoName, beanDefinition);
+                            resultDao = (DaoRepository<?>) context.getBean(daoName);
                         } else {
                             throw new BeanNotOfRequiredTypeException(field.getName(), DaoRepository.class, field.getType());
                         }
                         if (StringUtils.hasText(daoName)) {
                             logger.debug("Build, inject field and register bean with {}@{}<{}>", new String[]{daoName,
                                         resultDao.getClass().getSimpleName(), assoicateType.getSimpleName()});
-                            registerBean(daoName, resultDao);
                         } else {
                             logger.debug("Build, and inject field with bean {}@{}<{}>", new String[]{daoName, resultDao.getClass().getSimpleName(), assoicateType.getSimpleName()});
                         }
@@ -203,22 +194,16 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                                 ? String.format("%sDao", convertName(assoicateType.getSimpleName())) : null;
                         DaoRepository<?> resultDao = StringUtils.hasText(daoName) ? getBean(daoName, DaoRepository.class) : null;
                         if (resultDao == null) {
-                            resultDao = new AbstractSpringDao() {
-
-                                private boolean isDebugExport = false;
-
-                                public Class getClazz() {
-                                    if (!isDebugExport) {
-                                        isDebugExport = true;
-                                        logger.debug("{} @DaoManager annotate field and getClazz() return {}", bean.getClass().getSimpleName(), assoicateType.getSimpleName());
-                                    }
-                                    return assoicateType;
-                                }
-                            };
-                            ((JpaDaoSupport) resultDao).setEntityManagerFactory(context.getBean(ormm.factory(), EntityManagerFactory.class));
-                            if (StringUtils.hasText(daoName)) {
-                                registerBean(daoName, resultDao);
-                            }
+                            BeanDefinitionRegistry registry = (BeanDefinitionRegistry) regContext.getBeanFactory();
+                            GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
+                            beanDefinition.setBeanClass(SimpleSpringDao.class);
+                            beanDefinition.setLazyInit(false);
+                            beanDefinition.setAbstract(false);
+                            beanDefinition.setAutowireCandidate(true);
+                            beanDefinition.setScope(BeanDefinition.SCOPE_SINGLETON);
+                            beanDefinition.getConstructorArgumentValues().addIndexedArgumentValue(0, assoicateType);
+                            registry.registerBeanDefinition(daoName, beanDefinition);
+                            resultDao = (DaoRepository<?>) context.getBean(daoName);
                         }
                         resultManager.setDao(resultDao);
                     }
@@ -261,19 +246,16 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                     DaoRepository<?> resultDao = daoName != null && !daoName.isEmpty() ? getBean(daoName, DaoRepository.class) : null;
                     if (resultDao == null) {
                         if (ClassUtils.isAssignable(fc, AbstractSpringDao.class)) {
-                            resultDao = new AbstractSpringDao() {
-
-                                private boolean isDebugExport = false;
-
-                                public Class getClazz() {
-                                    if (!isDebugExport) {
-                                        isDebugExport = true;
-                                        logger.debug("{} @Dao annotate field and getClazz() return {}", bean.getClass().getSimpleName(), assoicateType.getSimpleName());
-                                    }
-                                    return assoicateType;
-                                }
-                            };
-                            ((JpaDaoSupport) resultDao).setEntityManagerFactory(context.getBean(dao.factory(), EntityManagerFactory.class));
+                            BeanDefinitionRegistry registry = (BeanDefinitionRegistry) regContext.getBeanFactory();
+                            GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
+                            beanDefinition.setBeanClass(SimpleSpringDao.class);
+                            beanDefinition.setLazyInit(false);
+                            beanDefinition.setAbstract(false);
+                            beanDefinition.setAutowireCandidate(true);
+                            beanDefinition.setScope(BeanDefinition.SCOPE_SINGLETON);
+                            beanDefinition.getConstructorArgumentValues().addIndexedArgumentValue(0, assoicateType);
+                            registry.registerBeanDefinition(daoName, beanDefinition);
+                            resultDao = (DaoRepository<?>) context.getBean(daoName);
                         } else {
                             BeanDefinitionRegistry registry = (BeanDefinitionRegistry) regContext.getBeanFactory();
                             GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
@@ -283,14 +265,8 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                             beanDefinition.setAutowireCandidate(true);
                             beanDefinition.setScope(BeanDefinition.SCOPE_SINGLETON);
                             String def = "_" + String.valueOf(defcnt.getAndAdd(1));
-                            if (ClassUtils.isAssignable(JpaDaoSupport.class, fc)) {
-                                beanDefinition.getPropertyValues().add("entityManagerFactory", context.getBean(dao.factory(), EntityManagerFactory.class));
-                            }
-                            registry.registerBeanDefinition(daoName + def, beanDefinition);
-                            resultDao = (DaoRepository<?>) context.getBean(daoName + def);
-                        }
-                        if (StringUtils.hasText(daoName)) {
-                            registerBean(daoName, resultDao);
+                            registry.registerBeanDefinition(daoName, beanDefinition);
+                            resultDao = (DaoRepository<?>) context.getBean(daoName);
                         }
                     }
                     ReflectionUtils.makeAccessible(method);
@@ -355,22 +331,16 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                                 ? String.format("%sDao", convertName(assoicateType.getSimpleName())) : null;
                         DaoRepository<?> resultDao = StringUtils.hasText(daoName) ? getBean(daoName, DaoRepository.class) : null;
                         if (resultDao == null) {
-                            resultDao = new AbstractSpringDao() {
-
-                                private boolean isDebugExport = false;
-
-                                public Class getClazz() {
-                                    if (!isDebugExport) {
-                                        isDebugExport = true;
-                                        logger.debug("{} @DaoManager annotate field and getClazz() return {}", bean.getClass().getSimpleName(), assoicateType.getSimpleName());
-                                    }
-                                    return assoicateType;
-                                }
-                            };
-                            ((JpaDaoSupport) resultDao).setEntityManagerFactory(context.getBean(ormm.factory(), EntityManagerFactory.class));
-                            if (StringUtils.hasText(daoName)) {
-                                registerBean(daoName, resultDao);
-                            }
+                            BeanDefinitionRegistry registry = (BeanDefinitionRegistry) regContext.getBeanFactory();
+                            GenericBeanDefinition beanDefinition = new GenericBeanDefinition();
+                            beanDefinition.setBeanClass(SimpleSpringDao.class);
+                            beanDefinition.setLazyInit(false);
+                            beanDefinition.setAbstract(false);
+                            beanDefinition.setAutowireCandidate(true);
+                            beanDefinition.setScope(BeanDefinition.SCOPE_SINGLETON);
+                            beanDefinition.getConstructorArgumentValues().addIndexedArgumentValue(0, assoicateType);
+                            registry.registerBeanDefinition(daoName, beanDefinition);
+                            resultDao = (DaoRepository<?>) context.getBean(daoName);
                         }
                         resultManager.setDao(resultDao);
                     }

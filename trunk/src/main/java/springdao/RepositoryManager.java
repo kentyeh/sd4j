@@ -112,6 +112,7 @@ public class RepositoryManager<E> {
         return dao == null ? null : dao.saveOrUpdate(entityName, entity);
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Collection<E> saveOrUpdate(Collection<E> entities) {
         return dao == null ? null : dao.save(entities);
     }
