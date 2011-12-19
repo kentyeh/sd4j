@@ -35,7 +35,7 @@
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
         <maven.compiler.optimize>true</maven.compiler.optimize>
-        <org.springframework.version>[3.0.6.RELEASE,)</org.springframework.version>
+        <org.springframework.version>[3.1.0.RELEASE,)</org.springframework.version>
         <org.hibernate.version>4.0.0.Final</org.hibernate.version>
         <hibernate.oscache.version>3.6.9.Final</hibernate.oscache.version>
         <hibernate.validator.version>4.2.0.Final</hibernate.validator.version>

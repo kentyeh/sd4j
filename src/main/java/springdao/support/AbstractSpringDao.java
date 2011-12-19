@@ -9,14 +9,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.LockModeType;
+import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+import javax.persistence.PersistenceUnit;
 import javax.persistence.PersistenceUnitUtil;
 import javax.persistence.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.orm.jpa.JpaCallback;
-import org.springframework.orm.jpa.support.JpaDaoSupport;
+import org.springframework.dao.support.DaoSupport;
+import org.springframework.orm.jpa.EntityManagerFactoryUtils;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 import springdao.DaoRepository;
@@ -25,11 +28,41 @@ import springdao.DaoRepository;
  *
  * @author Kent Yeh
  */
-public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoRepository<E> {
+public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepository<E> {
 
     static Logger logger = LoggerFactory.getLogger(AbstractSpringDao.class);
+    private EntityManagerFactory emf;
+    private EntityManager em;
 
-    private LockModeType getLockMode(String lockMode) {
+    @Override
+    protected void checkDaoConfig() throws IllegalArgumentException {
+        if (this.emf == null) {
+            throw new IllegalArgumentException("'EntityManagerFactory' is required");
+        }
+        if (this.em == null) {
+            throw new IllegalArgumentException("'EntityManager' is required");
+        }
+    }
+
+    public EntityManagerFactory getEntityManagerFactory() {
+        return emf;
+    }
+
+    @PersistenceUnit
+    public void setEntityManagerFactory(EntityManagerFactory emf) {
+        this.emf = emf;
+    }
+
+    public EntityManager getEntityManager() {
+        return em;
+    }
+
+    @PersistenceContext
+    public void setEntityManager(EntityManager em) {
+        this.em = em;
+    }
+
+    LockModeType getLockMode(String lockMode) {
         LockModeType mode = LockModeType.NONE;
         try {
             mode = LockModeType.valueOf(lockMode);
@@ -64,53 +97,56 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
 
     @Override
     public void clear() {
-        getJpaTemplate().execute(new JpaCallback<E>() {
-
-            public E doInJpa(EntityManager em) throws PersistenceException {
-                em.clear();
-                return null;
-            }
-        });
+        try {
+            em.clear();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
-    public boolean contains(final Object entity) {
-        return getJpaTemplate().contains(entity);
+    public boolean contains(Object entity) {
+        try {
+            return em.contains(entity);
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
     public E findByPrimaryKey(Serializable primaryKey) {
-        return getJpaTemplate().find(getClazz(), primaryKey);
+        try {
+            return em.find(getClazz(), primaryKey);
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
-    public E findByPrimaryKey(final Serializable primaryKey, final String lockMode) {
-        return getJpaTemplate().execute(new JpaCallback<E>() {
-
-            public E doInJpa(EntityManager em) throws PersistenceException {
-                return em.find(getClazz(), primaryKey, getLockMode(lockMode));
-            }
-        });
+    public E findByPrimaryKey(Serializable primaryKey, String lockMode) {
+        try {
+            return em.find(getClazz(), primaryKey, getLockMode(lockMode));
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
-    public E findByPrimaryKey(final Serializable primaryKey, final Map<String, Object> properties) {
-        return getJpaTemplate().execute(new JpaCallback<E>() {
-
-            public E doInJpa(EntityManager em) throws PersistenceException {
-                return em.find(getClazz(), primaryKey, properties);
-            }
-        });
+    public E findByPrimaryKey(Serializable primaryKey, Map<String, Object> properties) {
+        try {
+            return em.find(getClazz(), primaryKey, properties);
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
-    public E findByPrimaryKey(final Serializable primaryKey, final String lockMode, final Map<String, Object> properties) {
-        return getJpaTemplate().execute(new JpaCallback<E>() {
-
-            public E doInJpa(EntityManager em) throws PersistenceException {
-                return em.find(getClazz(), primaryKey, getLockMode(lockMode), properties);
-            }
-        });
+    public E findByPrimaryKey(Serializable primaryKey, String lockMode, Map<String, Object> properties) {
+        try {
+            return em.find(getClazz(), primaryKey, getLockMode(lockMode), properties);
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
@@ -119,28 +155,32 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
     }
 
     @Override
-    public Collection<E> save(final Collection<E> entities) {
-        return getJpaTemplate().execute(new JpaCallback<Collection<E>>() {
-
-            public Collection<E> doInJpa(EntityManager em) throws PersistenceException {
-                for (E entity : entities) {
-                    if (em.contains(entity)) {
-                        em.merge(entity);
-                    } else {
-                        em.persist(entity);
-                    }
+    public Collection<E> save(Collection<E> entities) {
+        try {
+            ArrayList<E> result = new ArrayList<E>(entities.size());
+            for (E entity : entities) {
+                if (em.contains(entity)) {
+                    result.add(em.merge(entity));
+                } else {
+                    em.persist(entity);
+                    result.add(entity);
                 }
-                em.flush();
-                return entities;
             }
-        });
+            return result;
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
     public E persist(E entity) {
-        getJpaTemplate().persist(entity);
-        getJpaTemplate().flush();
-        return entity;
+        try {
+            em.persist(entity);
+            em.flush();
+            return entity;
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
@@ -154,16 +194,15 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
     }
 
     @Override
-    public E update(final E entity, final String lockMode) {
-        return getJpaTemplate().execute(new JpaCallback<E>() {
-
-            public E doInJpa(EntityManager em) throws PersistenceException {
-                E result = em.merge(entity);
-                em.flush();
-                em.lock(em, getLockMode(lockMode));
-                return result;
-            }
-        });
+    public E update(E entity, String lockMode) {
+        try {
+            E result = em.merge(entity);
+            em.flush();
+            em.lock(em, getLockMode(lockMode));
+            return result;
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
@@ -173,23 +212,27 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
 
     @Override
     public E merge(E entity) {
-        E result = getJpaTemplate().merge(entity);
-        getJpaTemplate().flush();
-        return result;
+        try {
+            E result = em.merge(entity);
+            em.flush();
+            return result;
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
-    public Collection<E> merge(final Collection<E> entities) {
-        return getJpaTemplate().execute(new JpaCallback<Collection<E>>() {
-
-            public Collection<E> doInJpa(EntityManager em) throws PersistenceException {
-                for (E entity : entities) {
-                    em.merge(entity);
-                }
-                em.flush();
-                return entities;
+    public Collection<E> merge(Collection<E> entities) {
+        try {
+            ArrayList<E> result = new ArrayList<E>(entities.size());
+            for (E entity : entities) {
+                result.add(em.merge(entity));
             }
-        });
+            em.flush();
+            return result;
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
@@ -204,7 +247,7 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
      * @return 
      */
     @Override
-    public E saveOrUpdate(final E entity) {
+    public E saveOrUpdate(E entity) {
         return merge(entity);
     }
 
@@ -219,53 +262,47 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
     }
 
     @Override
-    public void delete(final E entity) {
-        getJpaTemplate().execute(new JpaCallback<Object>() {
+    public void delete(E entity) {
+        try {
+            em.remove(em.merge(entity));
+            em.flush();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
+    }
 
-            public Object doInJpa(EntityManager em) throws PersistenceException {
+    @Override
+    public void delete(E entity, String lockMode) {
+        try {
+            E target = em.merge(entity);
+            em.lock(target, getLockMode(lockMode));
+            em.remove(target);
+            em.flush();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
+    }
+
+    @Override
+    public void delete(Collection<E> entities) {
+        try {
+            for (E entity : entities) {
                 em.remove(em.merge(entity));
-                em.flush();
-                return null;
             }
-        });
+            em.flush();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
-    public void delete(final E entity, final String lockMode) {
-        getJpaTemplate().execute(new JpaCallback<Object>() {
-
-            public Object doInJpa(EntityManager em) throws PersistenceException {
-                em.lock(em.merge(entity), getLockMode(lockMode));
-                em.remove(entity);
-                em.flush();
-                return null;
-            }
-        });
-    }
-
-    @Override
-    public void delete(final Collection<E> entities) {
-        getJpaTemplate().execute(new JpaCallback<Object>() {
-
-            public Object doInJpa(EntityManager em) throws PersistenceException {
-                for (E entity : entities) {
-                    em.remove(em.merge(entity));
-                }
-                em.flush();
-                return null;
-            }
-        });
-    }
-
-    @Override
-    public E lock(final E entity, final String lockMode) {
-        return getJpaTemplate().execute(new JpaCallback<E>() {
-
-            public E doInJpa(EntityManager em) throws PersistenceException {
-                em.lock(entity, getLockMode(lockMode));
-                return entity;
-            }
-        });
+    public E lock(E entity, String lockMode) {
+        try {
+            em.lock(entity, getLockMode(lockMode));
+            return entity;
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
@@ -274,79 +311,77 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
     }
 
     @Override
-    public E refresh(final E entity) {
-        return getJpaTemplate().execute(new JpaCallback<E>() {
-
-            public E doInJpa(EntityManager em) throws PersistenceException {
-                em.refresh(entity);
-                return entity;
-            }
-        });
+    public E refresh(E entity) {
+        try {
+            em.refresh(entity);
+            return entity;
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
-    public E refresh(final E entity, final String lockMode) {
-        return getJpaTemplate().execute(new JpaCallback<E>() {
-
-            public E doInJpa(EntityManager em) throws PersistenceException {
-                em.refresh(entity, getLockMode(lockMode));
-                return entity;
-            }
-        });
+    public E refresh(E entity, String lockMode) {
+        try {
+            em.refresh(entity, getLockMode(lockMode));
+            return entity;
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
-    public int bulkUpdate(final String QL) {
-        return getJpaTemplate().execute(new JpaCallback<Integer>() {
-
-            public Integer doInJpa(EntityManager em) throws PersistenceException {
-                return em.createQuery(QL).executeUpdate();
-            }
-        });
+    public int bulkUpdate(String QL) {
+        try {
+            return em.createQuery(QL).executeUpdate();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
-    public List<Integer> bulkUpdate(final List<String> QLs) {
-        return getJpaTemplate().execute(new JpaCallback<List<Integer>>() {
-
-            public List<Integer> doInJpa(EntityManager em) throws PersistenceException {
-                List<Integer> result = new ArrayList<Integer>();
-                for (String ql : QLs) {
-                    result.add(em.createQuery(ql).executeUpdate());
-                }
-                return result;
+    public List<Integer> bulkUpdate(List<String> QLs) {
+        try {
+            List<Integer> result = new ArrayList<Integer>();
+            for (String ql : QLs) {
+                result.add(em.createQuery(ql).executeUpdate());
             }
-        });
+            return result;
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
-    public int bulkUpdate(final String QL, final Object... parameters) {
-        return getJpaTemplate().execute(new JpaCallback<Integer>() {
-
-            public Integer doInJpa(EntityManager em) throws PersistenceException {
-                Query query = em.createQuery(QL);
-                int i = 0;
+    public int bulkUpdate(String QL, Object... parameters) {
+        try {
+            Query query = em.createQuery(QL);
+            int i = 0;
+            if (parameters != null && parameters.length > 0) {
                 for (Object paramter : parameters) {
                     query.setParameter(++i, paramter);
                 }
-                return query.executeUpdate();
             }
-        });
+            return query.executeUpdate();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
-    public int bulkUpdate(final String QL, final Map<String, ?> parameters) {
-        return getJpaTemplate().execute(new JpaCallback<Integer>() {
-
-            public Integer doInJpa(EntityManager em) throws PersistenceException {
-                Query query = em.createQuery(QL);
-                int i = 0;
+    public int bulkUpdate(String QL, Map<String, ?> parameters) {
+        try {
+            Query query = em.createQuery(QL);
+            int i = 0;
+            if (parameters != null && !parameters.isEmpty()) {
                 for (String key : parameters.keySet()) {
                     query.setParameter(key, parameters.get(key));
                 }
-                return query.executeUpdate();
             }
-        });
+            return query.executeUpdate();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
@@ -359,173 +394,157 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
         return AliasHelper.getAlias(getClazz());
     }
 
+    protected List<E> findList(Query query) {
+        try {
+            EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
+            return query.getResultList();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
+    }
+
+    protected List<E> findList(Query query, Object... parameters) {
+        try {
+            EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
+            if (parameters != null && parameters.length > 0) {
+                for (int i = 0; i < parameters.length; i++) {
+                    query.setParameter(i + 1, parameters[i]);
+                }
+            }
+            return query.getResultList();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
+    }
+
+    protected List<E> findList(Query query, Map<String, ?> parameters) {
+        try {
+            EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
+            if (parameters != null && !parameters.isEmpty()) {
+                for (Map.Entry<String, ?> entry : parameters.entrySet()) {
+                    query.setParameter(entry.getKey(), entry.getValue());
+                }
+            }
+            return query.getResultList();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
+    }
+
     @Override
     public List<E> findByCriteria(String qlCriteria) {
-        return getJpaTemplate().find(new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
-                append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria).toString());
+        StringBuilder sb = new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
+                append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria);
+        return findList(em.createQuery(sb.toString()));
     }
 
     @Override
     public List<E> findByCriteria(String qlCriteria, Object... parameters) {
-        return getJpaTemplate().find(new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
-                append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria).toString(),
-                parameters);
+        StringBuilder sb = new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
+                append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria);
+        return findList(em.createQuery(sb.toString()), parameters);
     }
 
     @Override
     public List<E> findByCriteria(String qlCriteria, Map<String, ?> parameters) {
-        return getJpaTemplate().find(new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
-                append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria).toString(),
-                parameters);
+        StringBuilder sb = new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
+                append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria);
+        return findList(em.createQuery(sb.toString()), parameters);
     }
 
     @Override
     public List<E> findByJoinCriteria(String joins, String qlCriteria) {
-        return getJpaTemplate().find(new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
+        StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
                 append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" JOIN ").
-                append(joins).append(" ").append(qlCriteria).toString());
+                append(joins).append(" ").append(qlCriteria);
+        return findList(em.createQuery(sb.toString()));
     }
 
     @Override
     public List<E> findByJoinCriteria(String joins, String qlCriteria, Object... parameters) {
-        return getJpaTemplate().find(new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
+        StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
                 append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
-                append(joins).append(" ").append(qlCriteria).toString(), parameters);
+                append(joins).append(" ").append(qlCriteria);
+        return findList(em.createQuery(sb.toString()));
     }
 
     @Override
     public List<E> findByJoinCriteria(String joins, String qlCriteria, Map<String, ?> parameters) {
-        return getJpaTemplate().find(new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
+        StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
                 append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
-                append(joins).append(" ").append(qlCriteria).toString(), parameters);
+                append(joins).append(" ").append(qlCriteria);
+        return findList(em.createQuery(sb.toString()), parameters);
     }
 
     @Override
-    public List<E> findByCriteria(final String qlCriteria, final int startPageNo, final int pageSize, final Object... parameters) {
+    public List<E> findByCriteria(String qlCriteria, int startPageNo, int pageSize, Object... parameters) {
         if ((startPageNo < 1) || (pageSize < 1)) {
             return parameters != null || parameters.length == 0 ? findByCriteria(qlCriteria) : findByCriteria(qlCriteria, parameters);
         } else if (parameters == null || parameters.length == 0) {
             return findByCriteria(qlCriteria, startPageNo, pageSize);
         } else {
-            return getJpaTemplate().execute(new JpaCallback<List<E>>() {
-
-                public List<E> doInJpa(EntityManager em) throws PersistenceException {
-                    StringBuilder sb = new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
-                            append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria);
-                    Query query = em.createQuery(sb.toString()).setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize);
-                    getJpaTemplate().prepareQuery(query);
-                    if (parameters != null && parameters.length > 0) {
-                        int i = 0;
-                        int maxi = query.getParameters().size();
-                        for (Object param : parameters) {
-                            if (i < maxi) {
-                                query.setParameter(++i, param);
-                            }
-                        }
-                    }
-                    return query.getResultList();
-                }
-            });
+            StringBuilder sb = new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
+                    append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria);
+            return findList(em.createQuery(sb.toString()).
+                    setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize), parameters);
         }
     }
 
     @Override
-    public List<E> findByCriteria(final String qlCriteria, final int startPageNo, final int pageSize, final Map<String, ?> parameters) {
+    public List<E> findByCriteria(String qlCriteria, int startPageNo, int pageSize, Map<String, ?> parameters) {
         if ((startPageNo < 1) || (pageSize < 1)) {
             return parameters == null || parameters.isEmpty() ? findByCriteria(qlCriteria) : findByCriteria(qlCriteria, parameters);
         } else if (parameters == null || parameters.isEmpty()) {
             return findByCriteria(qlCriteria, startPageNo, pageSize);
         } else {
-            return getJpaTemplate().execute(new JpaCallback<List<E>>() {
-
-                public List<E> doInJpa(EntityManager em) throws PersistenceException {
-                    StringBuilder sb = new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
-                            append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria);
-                    Query query = em.createQuery(sb.toString()).setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize);
-                    getJpaTemplate().prepareQuery(query);
-                    if (parameters != null && !parameters.isEmpty()) {
-                        for (String key : parameters.keySet()) {
-                            query.setParameter(key, parameters.get(key));
-                        }
-                    }
-                    return query.getResultList();
-                }
-            });
+            StringBuilder sb = new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
+                    append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria);
+            return findList(em.createQuery(sb.toString()).setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize), parameters);
         }
     }
 
     @Override
-    public List<E> findByJoinCriteria(final String joins, final String qlCriteria, final int startPageNo, final int pageSize,
-            final Object... parameters) {
+    public List<E> findByJoinCriteria(String joins, String qlCriteria, int startPageNo, int pageSize,
+            Object... parameters) {
         if ((startPageNo < 1) || (pageSize < 1)) {
             return parameters == null || parameters.length == 0 ? findByJoinCriteria(joins, qlCriteria)
                     : findByJoinCriteria(joins, qlCriteria, parameters);
         } else if (parameters == null || parameters.length == 0) {
             return findByCriteria(qlCriteria, startPageNo, pageSize);
         } else {
-            return getJpaTemplate().execute(new JpaCallback<List<E>>() {
-
-                public List<E> doInJpa(EntityManager em) throws PersistenceException {
-                    StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
-                            append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
-                            append(joins).append(" ").append(qlCriteria);
-                    Query query = em.createQuery(sb.toString()).setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize);
-                    getJpaTemplate().prepareQuery(query);
-                    int i = 0;
-                    int maxi = query.getParameters().size();
-                    for (Object param : parameters) {
-                        if (i < maxi) {
-                            query.setParameter(++i, param);
-                        }
-                    }
-                    return query.getResultList();
-                }
-            });
+            StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
+                    append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
+                    append(joins).append(" ").append(qlCriteria);
+            return findList(em.createQuery(sb.toString()).
+                    setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize), parameters);
         }
     }
 
     @Override
-    public List<E> findByJoinCriteria(final String joins, final String qlCriteria, final int startPageNo, final int pageSize,
-            final Map<String, ?> parameters) {
+    public List<E> findByJoinCriteria(String joins, String qlCriteria, int startPageNo, int pageSize,
+            Map<String, ?> parameters) {
         if ((startPageNo < 1) || (pageSize < 1)) {
             return parameters == null || parameters.isEmpty() ? findByJoinCriteria(joins, qlCriteria)
                     : findByJoinCriteria(joins, qlCriteria, parameters);
         } else if (parameters == null || parameters.isEmpty()) {
             return findByCriteria(qlCriteria, startPageNo, pageSize);
         } else {
-            return getJpaTemplate().execute(new JpaCallback<List<E>>() {
-
-                public List<E> doInJpa(EntityManager em) throws PersistenceException {
-                    StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
-                            append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
-                            append(joins).append(" ").append(qlCriteria);
-                    Query query = em.createQuery(sb.toString()).setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize);
-                    getJpaTemplate().prepareQuery(query);
-                    for (String key : parameters.keySet()) {
-                        query.setParameter(key, parameters.get(key));
-                    }
-                    return query.getResultList();
-                }
-            });
+            StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
+                    append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
+                    append(joins).append(" ").append(qlCriteria);
+            return findList(em.createQuery(sb.toString()).
+                    setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize), parameters);
         }
     }
 
     @Override
-    public List<E> findByCriteria(final String qlCriteria, final int startPageNo, final int pageSize) {
+    public List<E> findByCriteria(String qlCriteria, int startPageNo, int pageSize) {
         if ((startPageNo < 1) || (pageSize < 1)) {
             return findByCriteria(qlCriteria);
         } else {
-
-            return getJpaTemplate().execute(new JpaCallback<List<E>>() {
-
-                public List<E> doInJpa(EntityManager em) throws PersistenceException {
-                    StringBuilder sb = new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
-                            append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria);
-                    Query query = em.createQuery(sb.toString()).setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize);
-                    getJpaTemplate().prepareQuery(query);
-                    return query.getResultList();
-                }
-            });
+            StringBuilder sb = new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
+                    append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria);
+            return findList(em.createQuery(sb.toString()).setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize));
         }
     }
 
@@ -535,67 +554,25 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
                 append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
                 append(joins).append(" ").append(qlCriteria);
         if ((startPageNo < 1) || (pageSize < 1)) {
-            return getJpaTemplate().find(sb.toString());
+            return findList(em.createQuery(sb.toString()));
         } else {
-            return getJpaTemplate().execute(new JpaCallback<List<E>>() {
-
-                public List<E> doInJpa(EntityManager em) throws PersistenceException {
-                    Query query = em.createQuery(sb.toString()).setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize);
-                    getJpaTemplate().prepareQuery(query);
-                    return query.getResultList();
-                }
-            });
+            return findList(em.createQuery(sb.toString()).setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize));
         }
     }
 
     @Override
-    public List<E> findBySQLQuery(final String sql) {
-        return getJpaTemplate().execute(new JpaCallback<List<E>>() {
-
-            public List<E> doInJpa(EntityManager em) throws PersistenceException {
-                Query query = em.createNativeQuery(sql, getClazz());
-                getJpaTemplate().prepareQuery(query);
-                return query.getResultList();
-            }
-        });
+    public List<E> findBySQLQuery(String sql) {
+        return findList(em.createNativeQuery(sql, getClazz()));
     }
 
     @Override
-    public List<E> findBySQLQuery(final String sql, final Object... parameters) {
-        return getJpaTemplate().execute(new JpaCallback<List<E>>() {
-
-            public List<E> doInJpa(EntityManager em) throws PersistenceException {
-                Query query = em.createNativeQuery(sql, getClazz());
-                getJpaTemplate().prepareQuery(query);
-                if (parameters != null && parameters.length > 0) {
-                    int i = 0;
-                    int maxi = query.getParameters().size();
-                    for (Object param : parameters) {
-                        if (i < maxi) {
-                            query.setParameter(++i, param);
-                        }
-                    }
-                }
-                return query.getResultList();
-            }
-        });
+    public List<E> findBySQLQuery(String sql, Object... parameters) {
+        return findList(em.createNativeQuery(sql, getClazz()), parameters);
     }
 
     @Override
-    public List<E> findBySQLQuery(final String sql, final Map<String, ?> parameters) {
-        return getJpaTemplate().execute(new JpaCallback<List<E>>() {
-
-            public List<E> doInJpa(EntityManager em) throws PersistenceException {
-                Query query = em.createNativeQuery(sql, getClazz());
-                getJpaTemplate().prepareQuery(query);
-                if (parameters != null && !parameters.isEmpty()) {
-                    for (String key : parameters.keySet()) {
-                        query.setParameter(key, parameters.get(key));
-                    }
-                }
-                return query.getResultList();
-            }
-        });
+    public List<E> findBySQLQuery(String sql, Map<String, ?> parameters) {
+        return findList(em.createNativeQuery(sql, getClazz()), parameters);
     }
 
     /**
@@ -627,199 +604,149 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
     }
 
     @Override
-    public <T> T findUniqueByQL(final Class<T> clazz, final String QL) {
-        return getJpaTemplate().execute(new JpaCallback<T>() {
-
-            public T doInJpa(EntityManager em) throws PersistenceException {
-                Query query = clazz==null?em.createQuery(QL):em.createQuery(QL,clazz);
-                getJpaTemplate().prepareQuery(query);
-                return (T) query.getSingleResult();
-            }
-        });
+    public <T> T findUniqueByQL(Class<T> clazz, String QL) {
+        try {
+            Query query = clazz == null ? em.createQuery(QL) : em.createQuery(QL, clazz);
+            EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
+            return (T) query.getSingleResult();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
-    public <T> T findUniqueByQL(final Class<T> clazz, final String QL, final Object... parameters) {
-        return getJpaTemplate().execute(new JpaCallback<T>() {
-
-            public T doInJpa(EntityManager em) throws PersistenceException {
-                Query query = clazz==null?em.createQuery(QL):em.createQuery(QL,clazz);
-                getJpaTemplate().prepareQuery(query);
-                if (parameters != null && parameters.length > 0) {
-                    int i = 0;
-                    int maxi = query.getParameters().size();
-                    for (Object param : parameters) {
-                        if (i < maxi) {
-                            query.setParameter(++i, param);
-                        }
-                    }
+    public <T> T findUniqueByQL(Class<T> clazz, String QL, Object... parameters) {
+        try {
+            Query query = clazz == null ? em.createQuery(QL) : em.createQuery(QL, clazz);
+            EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
+            if (parameters != null && parameters.length > 0) {
+                for (int i = 0; i < parameters.length; i++) {
+                    query.setParameter(i + 1, parameters[i]);
                 }
-                return (T) query.getSingleResult();
             }
-        });
+            return (T) query.getSingleResult();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
-    public <T> T findUniqueByQL(final Class<T> clazz, final String QL, final Map<String, ?> parameters) {
-        return getJpaTemplate().execute(new JpaCallback<T>() {
-
-            public T doInJpa(EntityManager em) throws PersistenceException {
-                Query query = clazz==null?em.createQuery(QL):em.createQuery(QL,clazz);
-                getJpaTemplate().prepareQuery(query);
-                if (parameters != null && !parameters.isEmpty()) {
-                    for (String key : parameters.keySet()) {
-                        query.setParameter(key, parameters.get(key));
-                    }
+    public <T> T findUniqueByQL(Class<T> clazz, String QL, Map<String, ?> parameters) {
+        try {
+            Query query = clazz == null ? em.createQuery(QL) : em.createQuery(QL, clazz);
+            EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
+            if (parameters != null && !parameters.isEmpty()) {
+                for (Map.Entry<String, ?> entry : parameters.entrySet()) {
+                    query.setParameter(entry.getKey(), entry.getValue());
                 }
-                return (T) query.getSingleResult();
             }
-        });
+            return (T) query.getSingleResult();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
-    public <T> List<T> findListByQL(final Class<T> clazz, final String QL) {
-        return getJpaTemplate().execute(new JpaCallback<List<T>>() {
-
-            public List<T> doInJpa(EntityManager em) throws PersistenceException {
-                Query query = clazz==null?em.createQuery(QL):em.createQuery(QL,clazz);
-                getJpaTemplate().prepareQuery(query);
-                return query.getResultList();
-            }
-        });
+    public <T> List<T> findListByQL(Class<T> clazz, String QL) {
+        try {
+            assert em != null : "*************** em is empty******************";
+            Query query = clazz == null ? em.createQuery(QL) : em.createQuery(QL, clazz);
+            EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
+            return query.getResultList();
+        } catch (RuntimeException e) {
+            logger.error(e.getMessage(), e);
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
-    public <T> List<T> findListByQL(final Class<T> clazz, final String QL, final Object... parameters) {
-        return getJpaTemplate().execute(new JpaCallback<List<T>>() {
-
-            public List<T> doInJpa(EntityManager em) throws PersistenceException {
-                Query query = clazz==null?em.createQuery(QL):em.createQuery(QL,clazz);
-                getJpaTemplate().prepareQuery(query);
-                if (parameters != null && parameters.length > 0) {
-                    int i = 0;
-                    int maxi = query.getParameters().size();
-                    for (Object param : parameters) {
-                        if (i < maxi) {
-                            query.setParameter(++i, param);
-                        }
-                    }
+    public <T> List<T> findListByQL(Class<T> clazz, String QL, Object... parameters) {
+        try {
+            Query query = clazz == null ? em.createQuery(QL) : em.createQuery(QL, clazz);
+            EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
+            if (parameters != null && parameters.length > 0) {
+                for (int i = 0; i < parameters.length; i++) {
+                    query.setParameter(i + 1, parameters[i]);
                 }
-                return query.getResultList();
             }
-        });
+            return query.getResultList();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
-    public <T> List<T> findListByQL(final Class<T> clazz, final String QL, final Map<String, ?> parameters) {
-        return getJpaTemplate().execute(new JpaCallback<List<T>>() {
-
-            public List<T> doInJpa(EntityManager em) throws PersistenceException {
-                Query query = clazz==null?em.createQuery(QL):em.createQuery(QL,clazz);
-                getJpaTemplate().prepareQuery(query);
-                if (parameters != null && !parameters.isEmpty()) {
-                    for (String key : parameters.keySet()) {
-                        query.setParameter(key, parameters.get(key));
-                    }
+    public <T> List<T> findListByQL(Class<T> clazz, String QL, Map<String, ?> parameters) {
+        try {
+            Query query = clazz == null ? em.createQuery(QL) : em.createQuery(QL, clazz);
+            EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
+            if (parameters != null && !parameters.isEmpty()) {
+                for (Map.Entry<String, ?> entry : parameters.entrySet()) {
+                    query.setParameter(entry.getKey(), entry.getValue());
                 }
-                return query.getResultList();
             }
-        });
+            return query.getResultList();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
-    public List<E> findByNamedQuery(final String name) {
-        return getJpaTemplate().executeFind(new JpaCallback<List<E>>() {
-
-            public List<E> doInJpa(EntityManager em) throws PersistenceException {
-                return em.createNamedQuery(name, getClazz()).getResultList();
-            }
-        });
+    public List<E> findByNamedQuery(String name) {
+        return findList(em.createNamedQuery(name, getClazz()));
     }
 
     @Override
-    public List<E> findByNamedQuery(final String name, final Object... parameters) {
-        return getJpaTemplate().executeFind(new JpaCallback<List<E>>() {
+    public List<E> findByNamedQuery(String name, Object... parameters) {
+        return findList(em.createNamedQuery(name, getClazz()), parameters);
+    }
 
-            public List<E> doInJpa(EntityManager em) throws PersistenceException {
-                Query query = em.createNamedQuery(name, getClazz());
-                getJpaTemplate().prepareQuery(query);
-                if (parameters != null && parameters.length > 0) {
-                    int i = 0;
-                    int maxi = query.getParameters().size();
-                    for (Object param : parameters) {
-                        if (i < maxi) {
-                            query.setParameter(++i, param);
-                        }
-                    }
+    @Override
+    public List<E> findByNamedQuery(String name, Map<String, ?> parameters) {
+        return findList(em.createNamedQuery(name, getClazz()), parameters);
+    }
+
+    @Override
+    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name) {
+        try {
+            Query query = em.createNamedQuery(name);
+            EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
+            return query.getResultList();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
+    }
+
+    @Override
+    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Object... parameters) {
+        try {
+            Query query = em.createNamedQuery(name);
+            EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
+            if (parameters != null && parameters.length > 0) {
+                for (int i = 0; i < parameters.length; i++) {
+                    query.setParameter(i + 1, parameters[i]);
                 }
-                return query.getResultList();
             }
-        });
+            return query.getResultList();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
-    public List<E> findByNamedQuery(final String name, final Map<String, ?> parameters) {
-        return getJpaTemplate().executeFind(new JpaCallback<List<E>>() {
-
-            public List<E> doInJpa(EntityManager em) throws PersistenceException {
-                Query query = em.createNamedQuery(name, getClazz());
-                getJpaTemplate().prepareQuery(query);
-                if (parameters != null && !parameters.isEmpty()) {
-                    for (String key : parameters.keySet()) {
-                        query.setParameter(key, parameters.get(key));
-                    }
+    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Map<String, ?> parameters) {
+        try {
+            Query query = em.createNamedQuery(name);
+            EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
+            if (parameters != null && !parameters.isEmpty()) {
+                for (Map.Entry<String, ?> entry : parameters.entrySet()) {
+                    query.setParameter(entry.getKey(), entry.getValue());
                 }
-                return query.getResultList();
             }
-        });
-    }
-
-    @Override
-    public <T> List<T> findListByNamedQuery(Class<T> clazz, final String name) {
-        return getJpaTemplate().executeFind(new JpaCallback<List<T>>() {
-
-            public List<T> doInJpa(EntityManager em) throws PersistenceException {
-                return em.createNamedQuery(name).getResultList();
-            }
-        });
-    }
-
-    @Override
-    public <T> List<T> findListByNamedQuery(Class<T> clazz, final String name, final Object... parameters) {
-        return getJpaTemplate().executeFind(new JpaCallback<List<T>>() {
-
-            public List<T> doInJpa(EntityManager em) throws PersistenceException {
-                Query query = em.createNamedQuery(name);
-                getJpaTemplate().prepareQuery(query);
-                if (parameters != null && parameters.length > 0) {
-                    int i = 0;
-                    int maxi = query.getParameters().size();
-                    for (Object param : parameters) {
-                        if (i < maxi) {
-                            query.setParameter(++i, param);
-                        }
-                    }
-                }
-                return query.getResultList();
-            }
-        });
-    }
-
-    @Override
-    public <T> List<T> findListByNamedQuery(Class<T> clazz, final String name, final Map<String, ?> parameters) {
-        return getJpaTemplate().executeFind(new JpaCallback<List<T>>() {
-
-            public List<T> doInJpa(EntityManager em) throws PersistenceException {
-                Query query = em.createNamedQuery(name);
-                getJpaTemplate().prepareQuery(query);
-                if (parameters != null && !parameters.isEmpty()) {
-                    for (String key : parameters.keySet()) {
-                        query.setParameter(key, parameters.get(key));
-                    }
-                }
-                return query.getResultList();
-            }
-        });
+            return query.getResultList();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
@@ -828,47 +755,49 @@ public abstract class AbstractSpringDao<E> extends JpaDaoSupport implements DaoR
         final String methodName = collectionFieldName.matches("^[a-z][A-Z]") ? collectionFieldName : collectionFieldName.length() > 1
                 ? collectionFieldName.substring(0, 1).toUpperCase() + collectionFieldName.substring(1) : collectionFieldName.toUpperCase();
         final Object obj = entity;
-        return getJpaTemplate().execute(new JpaCallback<E>() {
+        final EntityManager fem = em;
+        try {
+            ReflectionUtils.doWithMethods(getClazz(),
+                    new ReflectionUtils.MethodCallback() {
 
-            public E doInJpa(final EntityManager em) throws PersistenceException {
-                ReflectionUtils.doWithMethods(getClazz(),
-                        new ReflectionUtils.MethodCallback() {
-
-                            public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-                                try {
-                                    Method setter = obj.getClass().getMethod("s" + method.getName().substring(1), method.getReturnType());
-                                    Object fieldObj = method.invoke(obj, new Object[]{});
-                                    if (fieldObj instanceof Collection) {
-                                        PersistenceUnitUtil puu = em.getEntityManagerFactory().getPersistenceUnitUtil();
-                                        if (!puu.isLoaded(obj, collectionFieldName)) {
-                                            E reattach = (E) em.merge(obj);
+                        public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+                            try {
+                                Method setter = obj.getClass().getMethod("s" + method.getName().substring(1), method.getReturnType());
+                                Object fieldObj = method.invoke(obj, new Object[]{});
+                                if (fieldObj instanceof Collection) {
+                                    PersistenceUnitUtil puu = fem.getEntityManagerFactory().getPersistenceUnitUtil();
+                                    if (!puu.isLoaded(obj, collectionFieldName)) {
+                                        E reattach = (E) fem.merge(obj);
 //                                            E reattach = (E) em.find(obj.getClass(), puu.getIdentifier(obj));
-                                            fieldObj = method.invoke(reattach, new Object[]{});
-                                            ((Collection) fieldObj).size();
-                                            setter.invoke(obj, fieldObj);
-                                        }
+                                        fieldObj = method.invoke(reattach, new Object[]{});
+                                        ((Collection) fieldObj).size();
+                                        setter.invoke(obj, fieldObj);
                                     }
-                                } catch (NoSuchMethodException ex) {
-                                    throw new PersistenceException("Setter " + getClazz().getSimpleName() + ".set" + methodName + "(...) not found.", ex);
-                                } catch (InvocationTargetException ex) {
-                                    throw new PersistenceException("Could not fetch Collection from " + getClazz().getSimpleName() + "." + method.getName(), ex);
                                 }
+                            } catch (NoSuchMethodException ex) {
+                                throw new PersistenceException("Setter " + getClazz().getSimpleName() + ".set" + methodName + "(...) not found.", ex);
+                            } catch (InvocationTargetException ex) {
+                                throw new PersistenceException("Could not fetch Collection from " + getClazz().getSimpleName() + "." + method.getName(), ex);
                             }
-                        },
-                        new ReflectionUtils.MethodFilter() {
+                        }
+                    },
+                    new ReflectionUtils.MethodFilter() {
 
-                            public boolean matches(Method method) {
-                                if (found.get()) {
-                                    return false;
-                                } else {
-                                    found.set(method.getName().equals("get" + methodName) && method.getParameterTypes().length == 0
-                                            && ClassUtils.isAssignable(Collection.class, method.getReturnType()));
-                                    return found.get();
-                                }
+                        public boolean matches(Method method) {
+                            if (found.get()) {
+                                return false;
+                            } else {
+                                found.set(method.getName().equals("get" + methodName) && method.getParameterTypes().length == 0
+                                        && ClassUtils.isAssignable(Collection.class, method.getReturnType()));
+                                return found.get();
                             }
-                        });
-                return (E) obj;
-            }
-        }, true);
+                        }
+                    });
+            return (E) obj;
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        } finally {
+            EntityManagerFactoryUtils.closeEntityManager(fem);
+        }
     }
 }

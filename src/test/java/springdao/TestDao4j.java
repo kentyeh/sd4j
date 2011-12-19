@@ -7,6 +7,7 @@ import springdao.reposotory.AnnotherDaoRepository;
 import springdao.reposotory.AnnotatedRepositoryManagerExt;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
@@ -58,9 +59,11 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
     private AnnotatedRepositoryManagerExt<Member> mmA;
     private RepositoryManager<Member> mmB;
     List<RepositoryManager<Member>> mms = new ArrayList<RepositoryManager<Member>>();
+    RepositoryManager<Member>[] mma;
     @DaoManager(Phone.class)
     private RepositoryManager<Phone> phoneManager;
     List<Member> lazys = new ArrayList<Member>();
+    private AtomicInteger cnt = new AtomicInteger(0);
 
     @Dao(value = Member.class, name = "annotherDao2")
     public void setAnotherDao2(AnnotherDaoRepository anotherDao2) {
@@ -99,6 +102,8 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
         mms.add(mmA);
         assertThat("mmB expect RepositoryManagerExt.class.", mmB, is(instanceOf(AnnotatedRepositoryManager.class)));
         mms.add(mmB);
+        mma = new RepositoryManager[mms.size()];
+        mma = mms.toArray(mma);
     }
 
     @AfterClass
@@ -143,18 +148,23 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
         assertThat("init lazy collection failed", lazy.getUserstores().size(), is(greaterThan(0)));
     }
 
-    @Test(dependsOnMethods = "testReattachAndInitCollection")
+    @Test(dependsOnMethods = "testReattachAndInitCollection", invocationCount = 11, threadPoolSize = 5)
     public void testModify() {
-        List<Member> members = mmB.findByCriteria("WHERE name like 'testNew%' ORDER BY name");
-        int i = 0;
-        for (Member member : members) {
-            member.setName(String.format("testModify%02d", ++i));
-            if (i % 2 == 0) {
-                mms.get(i - 1).update(member);
-            } else {
-                mms.get(i - 1).merge(member);
-            }
+        int idx = cnt.getAndIncrement();
+        RepositoryManager<Member> mm = mma[idx++];
+        String ql = String.format("WHERE name ='testNew%02d' ORDER BY name", idx);
+        Member member = mm.findFirstByCriteria(ql);
+        assertThat("can't find member:" + ql, member, is(notNullValue()));
+        member.setName(String.format("testModify%02d", idx));
+        if (idx % 2 == 0) {
+            mm.update(member);
+        } else {
+            mm.merge(member);
         }
+    }
+
+    @Test(dependsOnMethods = "testModify")
+    public void checkModify() {
         assertThat("modify member faild", mmB.findByCriteria("WHERE name like 'testModify%'").size(), is(greaterThanOrEqualTo(mms.size())));
         testSelect();
     }
@@ -236,7 +246,7 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
             assertThat("Multiple field query wrong", res.length, is(equalTo(2)));
         }
     }
-    
+
     @Test
     public void testFindListByQL() {
         StringBuilder sb = new StringBuilder("SELECT ").append(mmB.getAliasName()).append(".id FROM ").append(mmB.getEntityName()).
