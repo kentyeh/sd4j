@@ -23,6 +23,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsNull.notNullValue;
+import static org.hamcrest.core.IsNull.nullValue;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.hamcrest.core.AnyOf.anyOf;
 
@@ -110,18 +111,22 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
     public void tearDown() {
     }
 
-    @Test
+    @Test(invocationCount = 11, threadPoolSize = 5)
     public void testNew() {
-        int i = 0;
-        for (RepositoryManager<Member> m : mms) {
-            Member member = new Member();
-            member.setName(String.format("testNew%02d", ++i));
-            m.save(member);
-        }
-        assertThat("Insert new member faild", mmB.findByCriteria("WHERE name like ?1", "testNew%").size(), is(greaterThanOrEqualTo(mms.size())));
+        int idx = cnt.getAndIncrement();
+        RepositoryManager<Member> mm = mma[idx++];
+        Member member = new Member();
+        member.setName(String.format("testNew%02d", idx));
+        mm.save(member);
     }
 
     @Test(dependsOnMethods = "testNew")
+    public void checkNew() {
+        assertThat("Insert new member faild", mmB.findByCriteria("WHERE name like ?1", "testNew%").size(), is(greaterThanOrEqualTo(mms.size())));
+        cnt.set(0);
+    }
+
+    @Test(dependsOnMethods = "checkNew")
     public void testSelect() {
         int i = 0;
         for (RepositoryManager<Member> m : mms) {
@@ -167,34 +172,40 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
     public void checkModify() {
         assertThat("modify member faild", mmB.findByCriteria("WHERE name like 'testModify%'").size(), is(greaterThanOrEqualTo(mms.size())));
         testSelect();
+        cnt.set(0);
     }
 
-    @Test(dependsOnMethods = "testModify")
+    @Test(dependsOnMethods = "checkModify", invocationCount = 11, threadPoolSize = 5)
     public void testRollback() {
-        List<Member> members = mmB.findByCriteria("WHERE name like 'testModify%' ORDER BY name");
-        int i = 0;
-        for (Member member : members) {
-            member.setName("RooBeck");
-            try {
-                if (i % 2 == 0) {
-                    mms.get(i++).update(member);
-                } else {
-                    mms.get(i++).merge(member);
-                }
-            } catch (Exception e) {
+        int idx = cnt.getAndIncrement();
+        RepositoryManager<Member> mm = mma[idx++];
+        String ql = String.format("WHERE name ='testModify%02d' ORDER BY name", idx);
+        Member member = mm.findFirstByCriteria(ql);
+        assertThat("can't find member:" + ql, member, is(notNullValue()));
+        member.setName("RooBeck");
+        try {
+            if (idx % 2 == 0) {
+                mm.update(member);
+            } else {
+                mm.merge(member);
             }
+        } catch (Exception e) {
         }
-        assertThat("test rollback member faild", mmB.findByCriteria("WHERE name like 'testModify%'").size(), is(greaterThanOrEqualTo(mms.size())));
+        assertThat(String.format("test rollback 'testModify%02d' faild", idx),  mm.findFirstByCriteria(ql), is(notNullValue()));
     }
-
     @Test(dependsOnMethods = "testRollback")
+    public void afterTestRollback(){
+        cnt.set(0);
+    }
+    @Test(dependsOnMethods = "afterTestRollback", invocationCount = 11, threadPoolSize = 5)
     public void testRemove() {
-        List<Member> members = mmB.findByCriteria("WHERE name like 'testModify%' ORDER BY name");
-        int i = 0;
-        for (Member member : members) {
-            mms.get(i++).remove(member);
-        }
-        assertThat("remove member faild", mmB.findByCriteria("WHERE name like 'testModify%'").size(), is(equalTo(0)));
+        int idx = cnt.getAndIncrement();
+        RepositoryManager<Member> mm = mma[idx++];
+        String ql = String.format("WHERE name ='testModify%02d' ORDER BY name", idx);
+        Member member = mm.findFirstByCriteria(ql);
+        assertThat("can't find member:" + ql, member, is(notNullValue()));
+        mm.remove(member);
+        assertThat(String.format("test remove 'testModify%02d' faild", idx),  mm.findFirstByCriteria(ql), is(nullValue()));
     }
 
     @Test
