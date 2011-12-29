@@ -69,13 +69,12 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
         }
     }
 
-    private void registerBean(String name, Object bean) {
-        if (regContext != null) {
-            regContext.getBeanFactory().registerSingleton(name, bean);
-            logger.debug("register {} with {}->{}", new Object[]{name, bean.getClass(), bean});
-        }
+    /*private void registerBean(String name, Object bean) {
+    if (regContext != null) {
+    regContext.getBeanFactory().registerSingleton(name, bean);
+    logger.debug("register {} with {}->{}", new Object[]{name, bean.getClass(), bean});
     }
-
+    }*/
     private String convertName(String orgName) {
         return String.valueOf(orgName.charAt(0)).toLowerCase() + orgName.substring(1);
     }
@@ -206,9 +205,6 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                             resultDao = (DaoRepository<?>) context.getBean(daoName);
                         }
                         resultManager.setDao(resultDao);
-                    }
-                    if (StringUtils.hasText(mgrName)) {
-                        registerBean(mgrName, resultManager);
                     }
                     ReflectionUtils.makeAccessible(field);
                     logger.debug("Inject {} with {}", field.getName(), resultManager.getClass());
@@ -343,9 +339,6 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                             resultDao = (DaoRepository<?>) context.getBean(daoName);
                         }
                         resultManager.setDao(resultDao);
-                    }
-                    if (StringUtils.hasText(mgrName)) {
-                        registerBean(mgrName, resultManager);
                     }
                     ReflectionUtils.makeAccessible(method);
                     try {
