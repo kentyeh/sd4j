@@ -95,12 +95,22 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         }
     }
 
+    private RuntimeException convertException(Exception e) {
+        RuntimeException res = null;
+        if (e instanceof RuntimeException) {
+            res = EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible((RuntimeException) e);
+            return res == null ? (RuntimeException) e : res;
+        } else {
+            return new RuntimeException(e.getMessage(), e);
+        }
+    }
+
     @Override
     public void clear() {
         try {
             em.clear();
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -109,7 +119,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         try {
             return em.contains(entity);
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -118,7 +128,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         try {
             return em.find(getClazz(), primaryKey);
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -127,7 +137,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         try {
             return em.find(getClazz(), primaryKey, getLockMode(lockMode));
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -136,7 +146,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         try {
             return em.find(getClazz(), primaryKey, properties);
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -145,7 +155,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         try {
             return em.find(getClazz(), primaryKey, getLockMode(lockMode), properties);
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -168,7 +178,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             }
             return result;
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -179,7 +189,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             em.flush();
             return entity;
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -201,7 +211,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             em.lock(em, getLockMode(lockMode));
             return result;
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -217,7 +227,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             em.flush();
             return result;
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -231,7 +241,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             em.flush();
             return result;
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -267,7 +277,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             em.remove(em.merge(entity));
             em.flush();
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -279,7 +289,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             em.remove(target);
             em.flush();
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -291,7 +301,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             }
             em.flush();
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -301,7 +311,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             em.lock(entity, getLockMode(lockMode));
             return entity;
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -316,7 +326,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             em.refresh(entity);
             return entity;
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -326,7 +336,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             em.refresh(entity, getLockMode(lockMode));
             return entity;
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -335,7 +345,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         try {
             return em.createQuery(QL).executeUpdate();
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -348,7 +358,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             }
             return result;
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -364,7 +374,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             }
             return query.executeUpdate();
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -380,7 +390,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             }
             return query.executeUpdate();
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -399,7 +409,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
             return query.getResultList();
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -413,7 +423,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             }
             return query.getResultList();
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -427,7 +437,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             }
             return query.getResultList();
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -610,7 +620,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
             return (T) query.getSingleResult();
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -626,7 +636,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             }
             return (T) query.getSingleResult();
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -642,7 +652,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             }
             return (T) query.getSingleResult();
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -655,7 +665,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             return query.getResultList();
         } catch (RuntimeException e) {
             logger.error(e.getMessage(), e);
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -671,7 +681,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             }
             return query.getResultList();
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -687,7 +697,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             }
             return query.getResultList();
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -713,7 +723,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
             return query.getResultList();
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -729,7 +739,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             }
             return query.getResultList();
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -745,7 +755,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             }
             return query.getResultList();
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         }
     }
 
@@ -795,7 +805,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
                     });
             return (E) obj;
         } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+            throw convertException(e);
         } finally {
             EntityManagerFactoryUtils.closeEntityManager(fem);
         }
