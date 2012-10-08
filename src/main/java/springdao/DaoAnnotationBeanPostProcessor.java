@@ -62,7 +62,7 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
         try {
             return context.getBean(name, requiredType);
         } catch (NoSuchBeanDefinitionException ex) {
-            logger.warn("No bean name '{}'  of {} is defined.", name, requiredType.getSimpleName());
+            logger.warn("Bean name '{}' with {} not exists.", name, requiredType.getSimpleName());
             return null;
         } catch (BeansException ex) {
             logger.warn(String.format("Can't get %s[%s] bean.", requiredType.getSimpleName(), name), ex);
