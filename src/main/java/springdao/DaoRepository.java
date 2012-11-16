@@ -2,6 +2,7 @@ package springdao;
 
 import java.io.Serializable;
 import java.util.Collection;
+import javax.persistence.ManyToOne;
 import java.util.List;
 import java.util.Map;
 
@@ -128,7 +129,23 @@ public interface DaoRepository<E> {
 
     /**
      * Delete entity.<br/>
-     * 刪除物件
+     * 刪除物件<br/>
+     * <div style="color:red;font-weight:bold"> Notice:</div>
+     *  A child entity with a {@link ManyToOne &#064;ManyToOne} reference to a parent entity 
+     * can't be delete directed by {@link Dao &#064;Dao} or {@link DaoManager &#064;DaoManager},
+     * It should be delete like<br/>
+     * <div style="color:red;font-weight:bold"> 注意:</div>
+     * 當子物件包含{@link ManyToOne &#064;ManyToOne}參考到父物件時，無法直接由
+     * {@link Dao &#064;Dao} or {@link DaoManager &#064;DaoManager}刪除，必須以下方代碼進行子物件刪除
+     * <pre>
+     * &nbsp;&nbsp;Parent parent = parentDao.merge(child.getParent());
+     * &nbsp;&nbsp;child.setParent(null);
+     * &nbsp;&nbsp;parent.getChildren().remove(child);
+     * &nbsp;&nbsp;parentDao.merge(parent);
+     * </pre>
+     * Or it can be deleted by  issue a blukUpdate command instead like <br/>
+     * 或是使用以下代碼刪除<br/>
+     * <div style="color:blue"><code>childDao.blukUpdate(&quot;DELETE FROM &quot;+getEntityName()+&quot; WHERE id=?&quot;,child.getId())</code></div>
      * @param entity 物件
      */
     public void delete(E entity);
