@@ -176,6 +176,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
                     result.add(entity);
                 }
             }
+            em.flush();
             return result;
         } catch (RuntimeException e) {
             throw convertException(e);
@@ -274,7 +275,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     @Override
     public void delete(E entity) {
         try {
-            em.remove(em.merge(entity));
+            em.remove(contains(entity)?entity:em.merge(entity));
             em.flush();
         } catch (RuntimeException e) {
             throw convertException(e);
@@ -284,7 +285,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     @Override
     public void delete(E entity, String lockMode) {
         try {
-            E target = em.merge(entity);
+            E target = contains(entity)?entity:em.merge(entity);
             em.lock(target, getLockMode(lockMode));
             em.remove(target);
             em.flush();
@@ -297,7 +298,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     public void delete(Collection<E> entities) {
         try {
             for (E entity : entities) {
-                em.remove(em.merge(entity));
+                em.remove(contains(entity)?entity:em.merge(entity));
             }
             em.flush();
         } catch (RuntimeException e) {
