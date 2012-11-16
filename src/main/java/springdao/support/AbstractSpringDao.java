@@ -773,16 +773,13 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
                         public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
                             try {
                                 Method setter = obj.getClass().getMethod("s" + method.getName().substring(1), method.getReturnType());
-                                Object fieldObj = method.invoke(obj, new Object[]{});
-                                if (fieldObj instanceof Collection) {
-                                    PersistenceUnitUtil puu = fem.getEntityManagerFactory().getPersistenceUnitUtil();
-                                    if (!puu.isLoaded(obj, collectionFieldName)) {
-                                        E reattach = (E) fem.merge(obj);
-//                                            E reattach = (E) em.find(obj.getClass(), puu.getIdentifier(obj));
-                                        fieldObj = method.invoke(reattach, new Object[]{});
-                                        ((Collection) fieldObj).size();
-                                        setter.invoke(obj, fieldObj);
-                                    }
+                                PersistenceUnitUtil puu = fem.getEntityManagerFactory().getPersistenceUnitUtil();
+                                if (!puu.isLoaded(obj, collectionFieldName)) {
+                                    E reattach = (E) fem.merge(obj);
+//                                    E reattach = (E) em.find(obj.getClass(), puu.getIdentifier(obj));
+                                    Object fieldObj = method.invoke(reattach, new Object[]{});
+                                    ((Collection) fieldObj).size();
+                                    setter.invoke(obj, fieldObj);
                                 }
                             } catch (NoSuchMethodException ex) {
                                 throw new PersistenceException("Setter " + getClazz().getSimpleName() + ".set" + methodName + "(...) not found.", ex);
