@@ -5,7 +5,7 @@
 
     <groupId>springDao</groupId>
     <artifactId>sd4j</artifactId>
-    <version>2.0.5</version>
+    <version>2.0.6</version>
     <packaging>jar</packaging>
 
     <name>sd4j</name>
@@ -35,8 +35,8 @@
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
         <maven.compiler.optimize>true</maven.compiler.optimize>
-        <org.springframework.version>3.2.0.RELEASE</org.springframework.version>
-        <org.hibernate.version>4.1.8.Final</org.hibernate.version>
+        <org.springframework.version>3.2.1.RELEASE</org.springframework.version>
+        <org.hibernate.version>4.1.9.Final</org.hibernate.version>
         <hibernate.oscache.version>3.6.9.Final</hibernate.oscache.version>
         <hibernate.validator.version>4.3.0.Final</hibernate.validator.version>
         <slf4j.version>1.7.2</slf4j.version>
@@ -91,7 +91,7 @@
         <dependency>
             <groupId>net.sf.ehcache</groupId>
             <artifactId>ehcache-core</artifactId>
-            <version>2.6.2</version>                       
+            <version>2.6.3</version>                       
             <scope>test</scope>
         </dependency>
         <!--dependency>
@@ -120,6 +120,12 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
+            <version>${org.springframework.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
             <version>${org.springframework.version}</version>
             <scope>test</scope>
         </dependency>
@@ -194,7 +200,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.1.2</version>
+                <version>2.2.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -208,7 +214,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.8</version>
+                <version>2.9</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
