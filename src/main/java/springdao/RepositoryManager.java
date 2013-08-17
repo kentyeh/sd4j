@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class RepositoryManager<E> {
 
-    DaoRepository<E> dao;
+    private DaoRepository<E> dao;
     protected static Logger logger = LoggerFactory.getLogger(RepositoryManager.class);
 
     public DaoRepository<E> getDao() {
