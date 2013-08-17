@@ -132,7 +132,7 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                         } else {
                             throw new BeanNotOfRequiredTypeException(field.getName(), DaoRepository.class, field.getType());
                         }
-                        logger.debug("Build, and inject field with bean {}@{}<{}>", new String[]{daoName, resultDao.getClass().getSimpleName(), assoicateType.getSimpleName()});
+                        logger.debug("Build, and inject field with bean {}@{}<{}>", daoName, resultDao.getClass().getSimpleName(), assoicateType.getSimpleName());
                     }
                     ReflectionUtils.makeAccessible(field);
                     field.set(bean, resultDao);

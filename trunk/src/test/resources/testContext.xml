@@ -75,6 +75,7 @@
     
     <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/> 
     
-    <!--Enabled @Transactional-->
+    <!--Enabled @Transactional
+    <context:spring-configured/>-->
     <tx:annotation-driven/>
 </beans>
