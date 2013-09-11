@@ -466,7 +466,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     @Override
     public List<E> findByJoinCriteria(String joins, String qlCriteria) {
         StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
-                append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" JOIN ").
+                append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
                 append(joins).append(" ").append(qlCriteria);
         return findList(em.createQuery(sb.toString()));
     }
