@@ -128,8 +128,8 @@ public interface DaoRepository<E> {
     public Collection<E> saveOrUpdate(Collection<E> entities);
 
     /**
-     * Delete entity.<br/>
-     * 刪除物件<br/>
+     * Delete entity by primary key.<br/>
+     * 藉由主鍵刪除物件<br/>
      * <div style="color:red;font-weight:bold"> Notice:</div>
      *  A child entity with a {@link ManyToOne &#064;ManyToOne} reference to a parent entity 
      * can't be delete directed by {@link Dao &#064;Dao} or {@link DaoManager &#064;DaoManager},
@@ -148,17 +148,18 @@ public interface DaoRepository<E> {
      * <div style="color:blue"><code>childDao.blukUpdate(&quot;DELETE FROM &quot;+getEntityName()+&quot; WHERE id=?&quot;,child.getId())</code></div>
      * @param entity 物件
      */
-    public void delete(E entity);
+    
+    public void delete(Serializable primaryKey);
 
     /**
      * Delete entity with lockMode.<br/>
      * 以指定的層級鎖定刪除物件
-     * @param entity
+     * @param primaryKey
      * @param lockMode
      */
-    public void delete(E entity, String lockMode);
+    public void delete(Serializable primaryKey, String lockMode);
 
-    public void delete(Collection<E> entities);
+    public void delete(Collection<Serializable>  primaryKeys);
 
     /**
      * Lock entity with lockMode.<br/>

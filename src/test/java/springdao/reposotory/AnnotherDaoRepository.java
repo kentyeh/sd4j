@@ -16,8 +16,8 @@ import javax.persistence.PersistenceException;
 import javax.persistence.PersistenceUnit;
 import javax.persistence.PersistenceUnitUtil;
 import javax.persistence.Query;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.springframework.dao.support.DaoSupport;
 import org.springframework.orm.jpa.EntityManagerFactoryUtils;
 import org.springframework.util.ClassUtils;
@@ -32,7 +32,7 @@ import springdao.model.Member;
  */
 public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<Member> {
 
-    static Logger logger = LoggerFactory.getLogger(AnnotherDaoRepository.class);
+    static Logger logger = LogManager.getLogger(AnnotherDaoRepository.class);
     private EntityManagerFactory emf;
     private EntityManager em;
 
@@ -64,15 +64,13 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     public void setEntityManager(EntityManager em) {
         this.em = em;
     }
-    
+
     private LockModeType getLockMode(String lockMode) {
-        LockModeType mode = LockModeType.NONE;
         try {
-            mode = LockModeType.valueOf(lockMode);
+            return LockModeType.valueOf(lockMode);
         } catch (RuntimeException ex) {
-            mode = LockModeType.NONE;
+            return LockModeType.NONE;
         }
-        return mode;
     }
 
     @Override
@@ -244,10 +242,13 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     /**
-     * Before using this method, look at 
-     * <a href="http://blog.xebia.com/2009/03/23/jpa-implementation-patterns-saving-detached-entities/">saveOrUpdate vs. merge</a>.
+     * Before using this method, look at
+     * <a
+     * href="http://blog.xebia.com/2009/03/23/jpa-implementation-patterns-saving-detached-entities/">saveOrUpdate
+     * vs. merge</a>.
+     *
      * @param entity
-     * @return 
+     * @return
      */
     @Override
     public Member saveOrUpdate(Member entity) {
@@ -265,32 +266,40 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
-    public void delete(Member entity) {
+    public void delete(Serializable pk) {
         try {
-            em.remove(em.merge(entity));
-            em.flush();
+            Member m = em.find(Member.class, pk);
+            if (m != null) {
+                em.remove(m);
+                em.flush();
+            }
         } catch (RuntimeException e) {
             throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
         }
     }
 
     @Override
-    public void delete(Member entity, String lockMode) {
+    public void delete(Serializable pk, String lockMode) {
         try {
-            Member target = em.merge(entity);
-            em.lock(target, getLockMode(lockMode));
-            em.remove(target);
-            em.flush();
+            Member m = em.find(Member.class, pk);
+            if (m != null) {
+                em.lock(m, getLockMode(lockMode));
+                em.remove(m);
+                em.flush();
+            }
         } catch (RuntimeException e) {
             throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
         }
     }
 
     @Override
-    public void delete(Collection<Member> entities) {
+    public void delete(Collection<Serializable> pks) {
         try {
-            for (Member entity : entities) {
-                em.remove(em.merge(entity));
+            for (Serializable pk : pks) {
+                Member m = em.find(Member.class, pk);
+                if (m != null) {
+                    em.remove(m);
+                }
             }
             em.flush();
         } catch (RuntimeException e) {
@@ -579,10 +588,10 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     /**
-     * 
+     *
      * @param sql
      * @param entityAlias not work here
-     * @return 
+     * @return
      */
     @Override
     public List<Member> findBySQLQuery(String sql, String entityAlias) {
@@ -590,11 +599,11 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     /**
-     * 
+     *
      * @param sql
      * @param entityAlias not work here.
      * @param parameters
-     * @return 
+     * @return
      */
     @Override
     public List<Member> findBySQLQuery(String sql, String entityAlias, Object... parameters) {
@@ -760,40 +769,40 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
         try {
             ReflectionUtils.doWithMethods(getClazz(),
                     new ReflectionUtils.MethodCallback() {
-
-                        public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-                            try {
-                                Method setter = obj.getClass().getMethod("s" + method.getName().substring(1), method.getReturnType());
-                                Object fieldObj = method.invoke(obj, new Object[]{});
-                                if (fieldObj instanceof Collection) {
-                                    PersistenceUnitUtil puu = fem.getEntityManagerFactory().getPersistenceUnitUtil();
-                                    if (!puu.isLoaded(obj, collectionFieldName)) {
-                                        Member reattach = (Member) fem.merge(obj);
+                @Override
+                public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+                    try {
+                        Method setter = obj.getClass().getMethod("s" + method.getName().substring(1), method.getReturnType());
+                        Object fieldObj = method.invoke(obj, new Object[]{});
+                        if (fieldObj instanceof Collection) {
+                            PersistenceUnitUtil puu = fem.getEntityManagerFactory().getPersistenceUnitUtil();
+                            if (!puu.isLoaded(obj, collectionFieldName)) {
+                                Member reattach = (Member) fem.merge(obj);
 //                                            Member reattach = (E) em.find(obj.getClass(), puu.getIdentifier(obj));
-                                        fieldObj = method.invoke(reattach, new Object[]{});
-                                        ((Collection) fieldObj).size();
-                                        setter.invoke(obj, fieldObj);
-                                    }
-                                }
-                            } catch (NoSuchMethodException ex) {
-                                throw new PersistenceException("Setter " + getClazz().getSimpleName() + ".set" + methodName + "(...) not found.", ex);
-                            } catch (InvocationTargetException ex) {
-                                throw new PersistenceException("Could not fetch Collection from " + getClazz().getSimpleName() + "." + method.getName(), ex);
+                                fieldObj = method.invoke(reattach, new Object[]{});
+                                ((Collection) fieldObj).size();
+                                setter.invoke(obj, fieldObj);
                             }
                         }
-                    },
+                    } catch (NoSuchMethodException ex) {
+                        throw new PersistenceException("Setter " + getClazz().getSimpleName() + ".set" + methodName + "(...) not found.", ex);
+                    } catch (InvocationTargetException ex) {
+                        throw new PersistenceException("Could not fetch Collection from " + getClazz().getSimpleName() + "." + method.getName(), ex);
+                    }
+                }
+            },
                     new ReflectionUtils.MethodFilter() {
-
-                        public boolean matches(Method method) {
-                            if (found.get()) {
-                                return false;
-                            } else {
-                                found.set(method.getName().equals("get" + methodName) && method.getParameterTypes().length == 0
-                                        && ClassUtils.isAssignable(Collection.class, method.getReturnType()));
-                                return found.get();
-                            }
-                        }
-                    });
+                @Override
+                public boolean matches(Method method) {
+                    if (found.get()) {
+                        return false;
+                    } else {
+                        found.set(method.getName().equals("get" + methodName) && method.getParameterTypes().length == 0
+                                && ClassUtils.isAssignable(Collection.class, method.getReturnType()));
+                        return found.get();
+                    }
+                }
+            });
             return (Member) obj;
         } catch (RuntimeException e) {
             throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);

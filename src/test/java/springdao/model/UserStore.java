@@ -15,6 +15,7 @@ import javax.persistence.Table;
 @Table(name = "userstore")
 public class UserStore implements Serializable {
 
+    private static final long serialVersionUID = -1004295437748921023L;
     @EmbeddedId
     protected UserStorePK id;
     @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)

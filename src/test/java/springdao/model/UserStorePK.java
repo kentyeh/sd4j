@@ -11,6 +11,7 @@ import javax.persistence.Embeddable;
 @Embeddable
 public class UserStorePK implements Serializable {
 
+    private static final long serialVersionUID = 1794742527018289345L;
     @Column(name = "id")
     private long ownerId;
     @Column(name = "sid")

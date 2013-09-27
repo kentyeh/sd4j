@@ -6,8 +6,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
 import org.springframework.beans.factory.InitializingBean;
@@ -21,7 +21,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.Ordered;
 import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
@@ -35,14 +34,14 @@ import springdao.support.SimpleSpringDao;
 public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter implements Ordered,
         ApplicationContextAware, InitializingBean {
 
-    private static Logger logger = LoggerFactory.getLogger(DaoAnnotationBeanPostProcessor.class);
+    private static Logger logger = LogManager.getLogger(DaoAnnotationBeanPostProcessor.class);
     private ApplicationContext context;
     private ConfigurableApplicationContext regContext;
     private static AtomicInteger defcnt = new AtomicInteger(0);
 
     @Override
     public int getOrder() {
-        return Ordered.LOWEST_PRECEDENCE;
+        return Ordered.HIGHEST_PRECEDENCE;
     }
 
     @Override
@@ -85,11 +84,12 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
 
         ReflectionUtils.doWithFields(bean.getClass(), new ReflectionUtils.FieldCallback() {
 
+            @Override
             public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
                 final Dao dao = field.getAnnotation(Dao.class);
 
                 if (dao != null) {
-                    Class<?> genericType = dao == null ? null : dao.value().equals(Object.class) ? null : dao.value();
+                    Class<?> genericType = dao.value().equals(Object.class) ? null : dao.value();
                     if (genericType == null) {
                         if (field.getGenericType() instanceof ParameterizedType) {
                             ParameterizedType pt = (ParameterizedType) field.getGenericType();
@@ -139,7 +139,7 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                 }
                 final DaoManager ormm = field.getAnnotation(DaoManager.class);
                 if (ormm != null) {
-                    Class<?> genericType = ormm == null ? null : ormm.value().equals(Object.class) ? null : ormm.value();
+                    Class<?> genericType = ormm.value().equals(Object.class) ? null : ormm.value();
                     if (genericType == null) {
                         if (field.getGenericType() instanceof ParameterizedType) {
                             ParameterizedType pt = (ParameterizedType) field.getGenericType();
@@ -209,6 +209,7 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
         });
         ReflectionUtils.doWithMethods(bean.getClass(), new ReflectionUtils.MethodCallback() {
 
+            @Override
             public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
 
                 Class<?> parmatypes[] = method.getParameterTypes();
@@ -217,7 +218,7 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                 final Dao dao = method.getAnnotation(Dao.class);
                 if (dao != null && fc != null && void.class.equals(method.getReturnType())
                         && ClassUtils.isAssignable(DaoRepository.class, fc)) {
-                    Class<?> genericType = dao == null ? null : dao.value().equals(Object.class) ? null : dao.value();
+                    Class<?> genericType = dao.value().equals(Object.class) ? null : dao.value();
                     if (genericType == null) {
                         Type[] genericParameterTypes = method.getGenericParameterTypes();
                         if (genericParameterTypes[0] instanceof ParameterizedType) {
@@ -271,7 +272,7 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                 final DaoManager ormm = method.getAnnotation(DaoManager.class);
                 if (ormm != null && fc != null && void.class.equals(method.getReturnType())
                         && (ClassUtils.isAssignable(fc, ormm.baseManagerType()) || ClassUtils.isAssignable(ormm.baseManagerType(), fc))) {
-                    Class<?> genericType = ormm == null ? null : ormm.value().equals(Object.class) ? null : ormm.value();
+                    Class<?> genericType = ormm.value().equals(Object.class) ? null : ormm.value();
                     if (genericType == null) {
                         Type[] genericParameterTypes = method.getGenericParameterTypes();
                         if (genericParameterTypes[0] instanceof ParameterizedType) {

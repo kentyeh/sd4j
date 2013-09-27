@@ -17,6 +17,7 @@ import javax.xml.bind.annotation.XmlTransient;
 @Table(name = "storage")
 public class Storage implements Serializable {
 
+    private static final long serialVersionUID = 4119657693199960543L;
     @Id
     private Integer sid;
     private String location;
