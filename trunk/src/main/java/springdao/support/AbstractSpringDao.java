@@ -16,8 +16,8 @@ import javax.persistence.PersistenceException;
 import javax.persistence.PersistenceUnit;
 import javax.persistence.PersistenceUnitUtil;
 import javax.persistence.Query;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.springframework.dao.support.DaoSupport;
 import org.springframework.orm.jpa.EntityManagerFactoryUtils;
 import org.springframework.util.ClassUtils;
@@ -30,7 +30,7 @@ import springdao.DaoRepository;
  */
 public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepository<E> {
 
-    static Logger logger = LoggerFactory.getLogger(AbstractSpringDao.class);
+    static Logger logger = LogManager.getLogger(AbstractSpringDao.class);
     private EntityManagerFactory emf;
     private EntityManager em;
 
@@ -63,13 +63,11 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     }
 
     LockModeType getLockMode(String lockMode) {
-        LockModeType mode = LockModeType.NONE;
         try {
-            mode = LockModeType.valueOf(lockMode);
+            return LockModeType.valueOf(lockMode);
         } catch (RuntimeException ex) {
-            mode = LockModeType.NONE;
+            return LockModeType.NONE;
         }
-        return mode;
     }
 
     @Override
@@ -96,9 +94,8 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     }
 
     private RuntimeException convertException(Exception e) {
-        RuntimeException res = null;
         if (e instanceof RuntimeException) {
-            res = EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible((RuntimeException) e);
+            RuntimeException res = EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible((RuntimeException) e);
             return res == null ? (RuntimeException) e : res;
         } else {
             return new RuntimeException(e.getMessage(), e);
@@ -252,10 +249,13 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     }
 
     /**
-     * Before using this method, look at 
-     * <a href="http://blog.xebia.com/2009/03/23/jpa-implementation-patterns-saving-detached-entities/">saveOrUpdate vs. merge</a>.
+     * Before using this method, look at
+     * <a
+     * href="http://blog.xebia.com/2009/03/23/jpa-implementation-patterns-saving-detached-entities/">saveOrUpdate
+     * vs. merge</a>.
+     *
      * @param entity
-     * @return 
+     * @return
      */
     @Override
     public E saveOrUpdate(E entity) {
@@ -273,32 +273,40 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     }
 
     @Override
-    public void delete(E entity) {
+    public void delete(Serializable primaryKey) {
         try {
-            em.remove(contains(entity)?entity:em.merge(entity));
-            em.flush();
+            Object entity = em.find(getClazz(), primaryKey);
+            if (entity != null) {
+                em.remove(entity);
+                em.flush();
+            }
         } catch (RuntimeException e) {
             throw convertException(e);
         }
     }
 
     @Override
-    public void delete(E entity, String lockMode) {
+    public void delete(Serializable primaryKey, String lockMode) {
         try {
-            E target = contains(entity)?entity:em.merge(entity);
-            em.lock(target, getLockMode(lockMode));
-            em.remove(target);
-            em.flush();
+            Object entity = em.find(getClazz(), primaryKey);
+            if (entity != null) {
+                em.lock(entity, getLockMode(lockMode));
+                em.remove(entity);
+                em.flush();
+            }
         } catch (RuntimeException e) {
             throw convertException(e);
         }
     }
 
     @Override
-    public void delete(Collection<E> entities) {
+    public void delete(Collection<Serializable> primaryKeys) {
         try {
-            for (E entity : entities) {
-                em.remove(contains(entity)?entity:em.merge(entity));
+            for (Serializable pk : primaryKeys) {
+                Object entity = em.find(getClazz(), pk);
+                if (entity != null) {
+                    em.remove(entity);
+                }
             }
             em.flush();
         } catch (RuntimeException e) {
@@ -587,10 +595,10 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     }
 
     /**
-     * 
+     *
      * @param sql
      * @param entityAlias not work here
-     * @return 
+     * @return
      */
     @Override
     public List<E> findBySQLQuery(String sql, String entityAlias) {
@@ -598,11 +606,11 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     }
 
     /**
-     * 
+     *
      * @param sql
      * @param entityAlias not work here.
      * @param parameters
-     * @return 
+     * @return
      */
     @Override
     public List<E> findBySQLQuery(String sql, String entityAlias, Object... parameters) {
@@ -770,37 +778,37 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         try {
             ReflectionUtils.doWithMethods(getClazz(),
                     new ReflectionUtils.MethodCallback() {
-
-                        public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-                            try {
-                                Method setter = obj.getClass().getMethod("s" + method.getName().substring(1), method.getReturnType());
-                                PersistenceUnitUtil puu = fem.getEntityManagerFactory().getPersistenceUnitUtil();
-                                if (!puu.isLoaded(obj, collectionFieldName)) {
-                                    E reattach = (E) fem.merge(obj);
+                @Override
+                public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+                    try {
+                        Method setter = obj.getClass().getMethod("s" + method.getName().substring(1), method.getReturnType());
+                        PersistenceUnitUtil puu = fem.getEntityManagerFactory().getPersistenceUnitUtil();
+                        if (!puu.isLoaded(obj, collectionFieldName)) {
+                            E reattach = (E) fem.merge(obj);
 //                                    E reattach = (E) em.find(obj.getClass(), puu.getIdentifier(obj));
-                                    Object fieldObj = method.invoke(reattach, new Object[]{});
-                                    ((Collection) fieldObj).size();
-                                    setter.invoke(obj, fieldObj);
-                                }
-                            } catch (NoSuchMethodException ex) {
-                                throw new PersistenceException("Setter " + getClazz().getSimpleName() + ".set" + methodName + "(...) not found.", ex);
-                            } catch (InvocationTargetException ex) {
-                                throw new PersistenceException("Could not fetch Collection from " + getClazz().getSimpleName() + "." + method.getName(), ex);
-                            }
+                            Object fieldObj = method.invoke(reattach, new Object[]{});
+                            ((Collection) fieldObj).size();
+                            setter.invoke(obj, fieldObj);
                         }
-                    },
+                    } catch (NoSuchMethodException ex) {
+                        throw new PersistenceException("Setter " + getClazz().getSimpleName() + ".set" + methodName + "(...) not found.", ex);
+                    } catch (InvocationTargetException ex) {
+                        throw new PersistenceException("Could not fetch Collection from " + getClazz().getSimpleName() + "." + method.getName(), ex);
+                    }
+                }
+            },
                     new ReflectionUtils.MethodFilter() {
-
-                        public boolean matches(Method method) {
-                            if (found.get()) {
-                                return false;
-                            } else {
-                                found.set(method.getName().equals("get" + methodName) && method.getParameterTypes().length == 0
-                                        && ClassUtils.isAssignable(Collection.class, method.getReturnType()));
-                                return found.get();
-                            }
-                        }
-                    });
+                @Override
+                public boolean matches(Method method) {
+                    if (found.get()) {
+                        return false;
+                    } else {
+                        found.set(method.getName().equals("get" + methodName) && method.getParameterTypes().length == 0
+                                && ClassUtils.isAssignable(Collection.class, method.getReturnType()));
+                        return found.get();
+                    }
+                }
+            });
             return (E) obj;
         } catch (RuntimeException e) {
             throw convertException(e);

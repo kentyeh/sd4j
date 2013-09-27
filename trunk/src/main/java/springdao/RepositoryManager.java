@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class RepositoryManager<E> {
 
     private DaoRepository<E> dao;
-    protected static Logger logger = LoggerFactory.getLogger(RepositoryManager.class);
+    protected static Logger logger = LogManager.getLogger(RepositoryManager.class);
 
     public DaoRepository<E> getDao() {
         return dao;
@@ -118,18 +118,18 @@ public class RepositoryManager<E> {
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void remove(E entity) {
-        dao.delete(entity);
+    public void remove(Serializable primaryKey) {
+        dao.delete(primaryKey);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void remove(E entity, String lockMode) {
-        dao.delete(entity, lockMode);
+    public void remove(Serializable primaryKey, String lockMode) {
+        dao.delete(primaryKey, lockMode);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void remove(Collection<E> entities) {
-        dao.delete(entities);
+    public void remove(Collection<Serializable>  primaryKeys) {
+        dao.delete(primaryKeys);
     }
 
     public E refresh(E entity) {

@@ -1,8 +1,8 @@
 package springdao.model;
 
 import java.util.Locale;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  *
@@ -22,7 +22,7 @@ public enum SupplyChainMember {
      * WareHousing(倉儲業者)
      */
     W;
-    private static Logger logger = LoggerFactory.getLogger(SupplyChainMember.class);
+    private static Logger logger = LogManager.getLogger(SupplyChainMember.class);
     private Locale descriptLocale = Locale.getDefault();
 
     public void setDescriptLocale(Locale descriptLocale) {

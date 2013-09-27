@@ -8,8 +8,8 @@ import springdao.reposotory.AnnotatedRepositoryManagerExt;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.AfterClass;
@@ -34,7 +34,7 @@ import static org.hamcrest.core.AnyOf.anyOf;
 @ContextConfiguration("classpath:testContext.xml")
 public class TestDao4j extends AbstractTestNGSpringContextTests {
 
-    private static Logger logger = LoggerFactory.getLogger(TestDao4j.class);
+    private static Logger logger = LogManager.getLogger(TestDao4j.class);
     @Dao(value = Member.class, name = "annotherDao1")
     private AnnotherDaoRepository anotherDao1;
     private AnnotherDaoRepository anotherDao2;
@@ -204,7 +204,7 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
         String ql = String.format("WHERE name ='testModify%02d' ORDER BY name", idx);
         Member member = mm.findFirstByCriteria(ql);
         assertThat("can't find member:" + ql, member, is(notNullValue()));
-        mm.remove(member);
+        mm.remove(member.getId());
         assertThat(String.format("test remove 'testModify%02d' faild", idx),  mm.findFirstByCriteria(ql), is(nullValue()));
     }
 
@@ -223,7 +223,7 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
             Member member = m.findFirstByCriteria("WHERE name = ?1", name);
             assertThat("Ophan insert failed", member, is(notNullValue()));
             assertThat("Ophan insert failed", member.getPhones().size(), is(equalTo(2)));
-            m.remove(newbie);
+            m.remove(newbie.getId());
             assertThat("Ophan delete failed", phoneManager.findByCriteria("WHERE owner is NULL").size(), is(equalTo(0)));
         }
     }
