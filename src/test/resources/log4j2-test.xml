@@ -16,10 +16,6 @@
                 </RollingRandomAccessFile>
         </Appenders>
         <Loggers>
-                <Logger name="tw.com.norbelbaby.kp" level="INFO" additivity="false">
-                        <appender-ref ref="console" />
-                        <appender-ref ref="sd4j-FastRollingFile" />
-                </Logger>
                 <Logger name="springdao" level="DEBUG" additivity="false">
                         <appender-ref ref="console" />
                         <appender-ref ref="sd4j-FastRollingFile" />

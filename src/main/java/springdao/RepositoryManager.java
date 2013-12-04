@@ -10,9 +10,12 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Do everything that {@link DaoRepository } do, it's main purpose is transaction management.<br/>
- * Standard JPA does not support custom isolation levels, So we must declare {@link Transactional @Transactional} here.<br/>
+ * Do everything that {@link DaoRepository } do, it's main purpose is
+ * transaction management.<br/>
+ * Standard JPA does not support custom isolation levels, So we must declare
+ * {@link Transactional @Transactional} here.<br/>
  * 封裝{@link DaoRepository}的功能，只是為了交易控制.
+ *
  * @author Kent Yeh
  */
 @Transactional(readOnly = true)
@@ -128,14 +131,16 @@ public class RepositoryManager<E> {
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void remove(Collection<Serializable>  primaryKeys) {
+    public void remove(Collection<Serializable> primaryKeys) {
         dao.delete(primaryKeys);
     }
 
+    @Deprecated
     public E refresh(E entity) {
         return dao == null ? null : dao.refresh(entity);
     }
 
+    @Deprecated
     public E refresh(E entity, String lockMode) {
         return dao == null ? null : dao.refresh(entity, lockMode);
     }
