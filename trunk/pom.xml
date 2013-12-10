@@ -43,7 +43,7 @@
         <maven.compiler.target>1.6</maven.compiler.target>
         <maven.compiler.optimize>true</maven.compiler.optimize>
         <org.springframework.version>3.2.5.RELEASE</org.springframework.version>
-        <org.hibernate.version>4.3.0.CR1</org.hibernate.version>
+        <org.hibernate.version>4.3.0.CR2</org.hibernate.version>
         <hibernate.validator.version>5.0.1.Final</hibernate.validator.version>
         <log4j.version>2.0-beta9</log4j.version>
         <disruptor.version>3.2.0</disruptor.version>
@@ -61,16 +61,13 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-jcl</artifactId>
             <version>${log4j.version}</version> 
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>${log4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.lmax</groupId>
-            <artifactId>disruptor</artifactId>
-            <version>${disruptor.version}</version>
+            <scope>test</scope>
         </dependency>
         <!--Log4j2 end-->
         <dependency>
@@ -263,6 +260,7 @@
                         <link>http://download.oracle.com/javaee/7/api/</link>
                         <link>http://docs.spring.io/spring/docs/current/javadoc-api/</link>
                         <link>http://docs.jboss.org/hibernate/stable/core/javadocs/</link>
+                        <link>http://logging.apache.org/log4j/2.x/log4j-core/apidocs/</link>
                     </links>
                 </configuration>
             </plugin>
