@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn" name="sd4j" verbose="false" monitorInterval="30">
+        <Appenders>
+                <Console name="console">
+                        <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %highlight{%-5level} %class{1.}.%M(%L) - %highlight{%msg}%n%ex{full}%n" />
+                </Console>
+                <RollingRandomAccessFile name="sd4j-FastRollingFile" fileName="${sys:log.foder}/sd4j.log"
+                        filePattern="${sys:log.foder}/sd4j-%d{MM-dd-yyyy}-%i.log.gz">
+                        <PatternLayout>
+                                <pattern>%d %p %C{1.} [%t] %m%n%ex{full}%n</pattern>
+                        </PatternLayout>
+                        <Policies>
+                                <TimeBasedTriggeringPolicy />
+                                <SizeBasedTriggeringPolicy size="250 MB" />
+                        </Policies>
+                </RollingRandomAccessFile>
+        </Appenders>
+        <Loggers>
+                <Logger name="springdao" level="DEBUG" additivity="false">
+                        <appender-ref ref="console" />
+                        <appender-ref ref="sd4j-FastRollingFile" />
+                </Logger>
+                <Root level="info">
+                        <appender-ref ref="console" />
+                        <appender-ref ref="sd4j-FastRollingFile" />
+                </Root>
+        </Loggers>
+</Configuration>
