@@ -70,17 +70,17 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
     }
 
     /*private void registerBean(String name, Object bean) {
-    if (regContext != null) {
-    regContext.getBeanFactory().registerSingleton(name, bean);
-    logger.debug("register {} with {}->{}", new Object[]{name, bean.getClass(), bean});
-    }
-    }*/
+     if (regContext != null) {
+     regContext.getBeanFactory().registerSingleton(name, bean);
+     logger.debug("register {} with {}->{}", new Object[]{name, bean.getClass(), bean});
+     }
+     }*/
     private String convertName(String orgName) {
         return String.valueOf(orgName.charAt(0)).toLowerCase() + orgName.substring(1);
     }
 
     @Override
-    public boolean postProcessAfterInstantiation(final Object bean, String beanName) throws BeansException {
+    public Object postProcessBeforeInitialization(final Object bean, String beanName) throws BeansException {
 
         ReflectionUtils.doWithFields(bean.getClass(), new ReflectionUtils.FieldCallback() {
 
@@ -300,7 +300,7 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                             beanDefinition.setAbstract(false);
                             beanDefinition.setAutowireCandidate(true);
                             beanDefinition.setScope(BeanDefinition.SCOPE_SINGLETON);
-                            registry.registerBeanDefinition(mgrName , beanDefinition);
+                            registry.registerBeanDefinition(mgrName, beanDefinition);
                             resultManager = (RepositoryManager) context.getBean(mgrName);
                         } else if (ClassUtils.isAssignable(fc, ormm.baseManagerType())) {
                             BeanDefinitionRegistry registry = (BeanDefinitionRegistry) regContext.getBeanFactory();
@@ -316,8 +316,8 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                     }
                     if (resultManager.getDao() == null) {
                         String daoName = StringUtils.hasText(ormm.daoName()) ? ormm.daoName() : ormm.autoRegister()
-                                ? String.format("%sDao", convertName(assoicateType.getSimpleName())) : 
-                                String.format("%sDao_%d", convertName(assoicateType.getSimpleName()),defcnt.getAndAdd(1)) ;
+                                ? String.format("%sDao", convertName(assoicateType.getSimpleName()))
+                                : String.format("%sDao_%d", convertName(assoicateType.getSimpleName()), defcnt.getAndAdd(1));
                         DaoRepository<?> resultDao = StringUtils.hasText(daoName) ? getBean(daoName, DaoRepository.class) : null;
                         if (resultDao == null) {
                             BeanDefinitionRegistry registry = (BeanDefinitionRegistry) regContext.getBeanFactory();
@@ -343,6 +343,6 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                 }
             }
         });
-        return true;
+        return bean;
     }
 }
