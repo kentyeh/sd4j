@@ -5,7 +5,7 @@
 
     <groupId>springDao</groupId>
     <artifactId>sd4j</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
     <packaging>jar</packaging>
 
     <name>sd4j</name>
@@ -42,8 +42,8 @@
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
         <maven.compiler.optimize>true</maven.compiler.optimize>
-        <org.springframework.version>4.0.0.RELEASE</org.springframework.version>
-        <org.hibernate.version>4.3.0.Final</org.hibernate.version>
+        <org.springframework.version>4.0.1.RELEASE</org.springframework.version>
+        <org.hibernate.version>4.3.1.Final</org.hibernate.version>
         <hibernate.validator.version>5.0.1.Final</hibernate.validator.version>
         <log4j.version>2.0-beta9</log4j.version>
         <disruptor.version>3.2.0</disruptor.version>
@@ -112,7 +112,7 @@
         <dependency>
             <groupId>net.sf.ehcache</groupId>
             <artifactId>ehcache-core</artifactId>
-            <version>2.6.6</version>                       
+            <version>2.6.8</version>                       
             <scope>test</scope>
         </dependency>
         <dependency>
