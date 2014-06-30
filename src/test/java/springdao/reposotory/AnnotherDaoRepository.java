@@ -616,9 +616,9 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
-    public <T> T findUniqueByQL(Class<T> clazz, String QL) {
+    public <T> T findUniqueByQL(String QL) {
         try {
-            Query query = clazz == null ? em.createQuery(QL) : em.createQuery(QL, clazz);
+            Query query = em.createQuery(QL);
             EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
             return (T) query.getSingleResult();
         } catch (RuntimeException e) {
@@ -627,9 +627,9 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
-    public <T> T findUniqueByQL(Class<T> clazz, String QL, Object... parameters) {
+    public <T> T findUniqueByQL(String QL, Object... parameters) {
         try {
-            Query query = clazz == null ? em.createQuery(QL) : em.createQuery(QL, clazz);
+            Query query = em.createQuery(QL);
             EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
             if (parameters != null && parameters.length > 0) {
                 for (int i = 0; i < parameters.length; i++) {
@@ -643,9 +643,9 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
-    public <T> T findUniqueByQL(Class<T> clazz, String QL, Map<String, ?> parameters) {
+    public <T> T findUniqueByQL(String QL, Map<String, ?> parameters) {
         try {
-            Query query = clazz == null ? em.createQuery(QL) : em.createQuery(QL, clazz);
+            Query query = em.createQuery(QL);
             EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
             if (parameters != null && !parameters.isEmpty()) {
                 for (Map.Entry<String, ?> entry : parameters.entrySet()) {
@@ -659,9 +659,9 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
-    public <T> List<T> findListByQL(Class<T> clazz, String QL) {
+    public <T> List<T> findListByQL(String QL) {
         try {
-            Query query = clazz == null ? em.createQuery(QL) : em.createQuery(QL, clazz);
+            Query query = em.createQuery(QL);
             EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
             return query.getResultList();
         } catch (RuntimeException e) {
@@ -670,9 +670,9 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
-    public <T> List<T> findListByQL(Class<T> clazz, String QL, Object... parameters) {
+    public <T> List<T> findListByQL(String QL, Object... parameters) {
         try {
-            Query query = clazz == null ? em.createQuery(QL) : em.createQuery(QL, clazz);
+            Query query = em.createQuery(QL);
             EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
             if (parameters != null && parameters.length > 0) {
                 for (int i = 0; i < parameters.length; i++) {
@@ -686,9 +686,9 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
-    public <T> List<T> findListByQL(Class<T> clazz, String QL, Map<String, ?> parameters) {
+    public <T> List<T> findListByQL(String QL, Map<String, ?> parameters) {
         try {
-            Query query = clazz == null ? em.createQuery(QL) : em.createQuery(QL, clazz);
+            Query query = em.createQuery(QL);
             EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
             if (parameters != null && !parameters.isEmpty()) {
                 for (Map.Entry<String, ?> entry : parameters.entrySet()) {
@@ -717,7 +717,7 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
-    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name) {
+    public <T> List<T> findListByNamedQuery(String name) {
         try {
             Query query = em.createNamedQuery(name);
             EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
@@ -728,7 +728,7 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
-    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Object... parameters) {
+    public <T> List<T> findListByNamedQuery(String name, Object... parameters) {
         try {
             Query query = em.createNamedQuery(name);
             EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
@@ -744,7 +744,7 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
-    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Map<String, ?> parameters) {
+    public <T> List<T> findListByNamedQuery(String name, Map<String, ?> parameters) {
         try {
             Query query = em.createNamedQuery(name);
             EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
@@ -769,40 +769,40 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
         try {
             ReflectionUtils.doWithMethods(getClazz(),
                     new ReflectionUtils.MethodCallback() {
-                @Override
-                public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
-                    try {
-                        Method setter = obj.getClass().getMethod("s" + method.getName().substring(1), method.getReturnType());
-                        Object fieldObj = method.invoke(obj, new Object[]{});
-                        if (fieldObj instanceof Collection) {
-                            PersistenceUnitUtil puu = fem.getEntityManagerFactory().getPersistenceUnitUtil();
-                            if (!puu.isLoaded(obj, collectionFieldName)) {
-                                Member reattach = (Member) fem.merge(obj);
+                        @Override
+                        public void doWith(Method method) throws IllegalArgumentException, IllegalAccessException {
+                            try {
+                                Method setter = obj.getClass().getMethod("s" + method.getName().substring(1), method.getReturnType());
+                                Object fieldObj = method.invoke(obj, new Object[]{});
+                                if (fieldObj instanceof Collection) {
+                                    PersistenceUnitUtil puu = fem.getEntityManagerFactory().getPersistenceUnitUtil();
+                                    if (!puu.isLoaded(obj, collectionFieldName)) {
+                                        Member reattach = (Member) fem.merge(obj);
 //                                            Member reattach = (E) em.find(obj.getClass(), puu.getIdentifier(obj));
-                                fieldObj = method.invoke(reattach, new Object[]{});
-                                ((Collection) fieldObj).size();
-                                setter.invoke(obj, fieldObj);
+                                        fieldObj = method.invoke(reattach, new Object[]{});
+                                        ((Collection) fieldObj).size();
+                                        setter.invoke(obj, fieldObj);
+                                    }
+                                }
+                            } catch (NoSuchMethodException ex) {
+                                throw new PersistenceException("Setter " + getClazz().getSimpleName() + ".set" + methodName + "(...) not found.", ex);
+                            } catch (InvocationTargetException ex) {
+                                throw new PersistenceException("Could not fetch Collection from " + getClazz().getSimpleName() + "." + method.getName(), ex);
                             }
                         }
-                    } catch (NoSuchMethodException ex) {
-                        throw new PersistenceException("Setter " + getClazz().getSimpleName() + ".set" + methodName + "(...) not found.", ex);
-                    } catch (InvocationTargetException ex) {
-                        throw new PersistenceException("Could not fetch Collection from " + getClazz().getSimpleName() + "." + method.getName(), ex);
-                    }
-                }
-            },
+                    },
                     new ReflectionUtils.MethodFilter() {
-                @Override
-                public boolean matches(Method method) {
-                    if (found.get()) {
-                        return false;
-                    } else {
-                        found.set(method.getName().equals("get" + methodName) && method.getParameterTypes().length == 0
-                                && ClassUtils.isAssignable(Collection.class, method.getReturnType()));
-                        return found.get();
-                    }
-                }
-            });
+                        @Override
+                        public boolean matches(Method method) {
+                            if (found.get()) {
+                                return false;
+                            } else {
+                                found.set(method.getName().equals("get" + methodName) && method.getParameterTypes().length == 0
+                                        && ClassUtils.isAssignable(Collection.class, method.getReturnType()));
+                                return found.get();
+                            }
+                        }
+                    });
             return (Member) obj;
         } catch (RuntimeException e) {
             throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
