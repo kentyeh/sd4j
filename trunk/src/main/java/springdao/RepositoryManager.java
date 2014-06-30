@@ -249,31 +249,59 @@ public class RepositoryManager<E> {
     }
 
     public <T> T findUniqueByQL(Class<T> clazz, String QL) {
-        return dao == null ? null : dao.findUniqueByQL(clazz, QL);
+        if (dao == null) {
+            return null;
+        } else {
+            return dao.findUniqueByQL(QL);
+        }
     }
 
-    public <T> T findUniqueByQL(Class<T> clazz, String QL, Object... parameters) {
-        return dao == null ? null : dao.findUniqueByQL(clazz, QL, parameters);
+    public <T> T findUniqueByQL(String QL, Object... parameters) {
+        if (dao == null) {
+            return null;
+        } else {
+            return dao.findUniqueByQL(QL, parameters);
+        }
     }
 
-    public <T> List<T> findListByQL(Class<T> clazz, String QL) {
-        return dao == null ? null : dao.findListByQL(clazz, QL);
+    public <T> List<T> findListByQL(String QL) {
+        if (dao == null) {
+            return null;
+        } else {
+            return dao.findListByQL(QL);
+        }
     }
 
     public <T> List<T> findListByQL(Class<T> clazz, String QL, Object... parameters) {
-        return dao == null ? null : dao.findListByQL(clazz, QL, parameters);
+        if (dao == null) {
+            return null;
+        } else {
+            return dao.findListByQL(QL, parameters);
+        }
     }
 
     public <T> List<T> findListByNamedQuery(Class<T> clazz, String name) {
-        return dao == null ? null : dao.findListByNamedQuery(clazz, name);
+        if (dao == null) {
+            return null;
+        } else {
+            return dao.findListByNamedQuery(name);
+        }
     }
 
     public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Object... parameters) {
-        return dao == null ? null : dao.findListByNamedQuery(clazz, name, parameters);
+        if (dao == null) {
+            return null;
+        } else {
+            return dao.findListByNamedQuery(name, parameters);
+        }
     }
 
     public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Map<String, ?> parameters) {
-        return dao == null ? null : dao.findListByNamedQuery(clazz, name, parameters);
+        if (dao == null) {
+            return null;
+        } else {
+            return dao.findListByNamedQuery(name, parameters);
+        }
     }
 
     public E initLazyCollection(E entity, String collectionFieldName) {
