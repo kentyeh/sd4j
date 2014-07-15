@@ -810,7 +810,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
                         }
                     });
             return (E) obj;
-        } catch (RuntimeException e) {
+        } catch (IllegalArgumentException e) {
             throw convertException(e);
         } finally {
             EntityManagerFactoryUtils.closeEntityManager(fem);
