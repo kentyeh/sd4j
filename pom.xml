@@ -5,7 +5,7 @@
 
     <groupId>springDao</groupId>
     <artifactId>sd4j</artifactId>
-    <version>4.0.1</version>
+    <version>4.0.2</version>
     <packaging>jar</packaging>
 
     <name>sd4j</name>
@@ -42,10 +42,10 @@
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
         <maven.compiler.optimize>true</maven.compiler.optimize>
-        <org.springframework.version>4.0.6.RELEASE</org.springframework.version>
-        <org.hibernate.version>4.3.5.Final</org.hibernate.version>
-        <hibernate.validator.version>5.1.1.Final</hibernate.validator.version>
-        <log4j.version>2.0-rc2</log4j.version>
+        <org.springframework.version>4.1.0.RELEASE</org.springframework.version>
+        <org.hibernate.version>4.3.6.Final</org.hibernate.version>
+        <hibernate.validator.version>5.1.2.Final</hibernate.validator.version>
+        <log4j.version>2.0.2</log4j.version>
         <disruptor.version>3.2.0</disruptor.version>
         <maven.test.skip>false</maven.test.skip>
     </properties>
@@ -125,7 +125,7 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>1.4.180</version>
+            <version>1.4.181</version>
             <scope>test</scope>
         </dependency>
         <dependency>
