@@ -140,12 +140,6 @@
             <version>1.4</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.javassist</groupId>
-            <artifactId>javassist</artifactId>
-            <version>3.18.2-GA</version>
-            <scope>test</scope>
-        </dependency>
         <!--Test library dependencies end.-->
     </dependencies>
     
@@ -182,6 +176,47 @@
                     <showDeprecation>true</showDeprecation>
                     <optimize>true</optimize>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <id>Instrument domain classes</id>
+                        <configuration>
+                            <tasks>
+                                <taskdef name="instrument" classname="org.hibernate.tool.instrument.javassist.InstrumentTask">
+                                    <classpath>
+                                        <path refid="maven.dependency.classpath"/>
+                                        <path refid="maven.plugin.classpath"/>
+                                    </classpath>
+                                </taskdef>
+                                <instrument verbose="true">
+                                    <fileset dir="${project.build.directory}/test-classes">
+                                        <include name="**/model/*.class"/>
+                                    </fileset>
+                                </instrument>
+                            </tasks>
+                        </configuration>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-core</artifactId>
+                        <version>${org.hibernate.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.javassist</groupId>
+                        <artifactId>javassist</artifactId>
+                        <version>3.18.2-GA</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
