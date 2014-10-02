@@ -5,7 +5,7 @@
 
     <groupId>springDao</groupId>
     <artifactId>sd4j</artifactId>
-    <version>4.0.2</version>
+    <version>4.0.3</version>
     <packaging>jar</packaging>
 
     <name>sd4j</name>
@@ -42,7 +42,7 @@
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
         <maven.compiler.optimize>true</maven.compiler.optimize>
-        <org.springframework.version>4.1.0.RELEASE</org.springframework.version>
+        <org.springframework.version>4.1.1.RELEASE</org.springframework.version>
         <org.hibernate.version>4.3.6.Final</org.hibernate.version>
         <hibernate.validator.version>5.1.2.Final</hibernate.validator.version>
         <log4j.version>2.0.2</log4j.version>
