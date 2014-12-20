@@ -34,10 +34,10 @@ import springdao.support.SimpleSpringDao;
 public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter implements Ordered,
         ApplicationContextAware, InitializingBean {
 
-    private static Logger logger = LogManager.getLogger(DaoAnnotationBeanPostProcessor.class);
+    private static final Logger logger = LogManager.getLogger(DaoAnnotationBeanPostProcessor.class);
     private ApplicationContext context;
     private ConfigurableApplicationContext regContext;
-    private static AtomicInteger defcnt = new AtomicInteger(0);
+    private static final AtomicInteger defcnt = new AtomicInteger(0);
 
     @Override
     public int getOrder() {

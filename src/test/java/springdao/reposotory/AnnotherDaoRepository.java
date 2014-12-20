@@ -36,6 +36,7 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     private EntityManagerFactory emf;
     private EntityManager em;
 
+    @Override
     public Class<Member> getClazz() {
         return Member.class;
     }
@@ -87,10 +88,7 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     public Member instanate() throws InstantiationException, IllegalAccessException {
         try {
             return getClazz().newInstance();
-        } catch (InstantiationException ex) {
-            logger.error("Instanate error", ex);
-            throw ex;
-        } catch (IllegalAccessException ex) {
+        } catch (InstantiationException | IllegalAccessException ex) {
             logger.error("Instanate error", ex);
             throw ex;
         }
@@ -158,7 +156,7 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     @Override
     public Collection<Member> save(Collection<Member> entities) {
         try {
-            ArrayList<Member> result = new ArrayList<Member>(entities.size());
+            ArrayList<Member> result = new ArrayList<>(entities.size());
             for (Member entity : entities) {
                 if (em.contains(entity)) {
                     result.add(em.merge(entity));
@@ -225,7 +223,7 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     @Override
     public Collection<Member> merge(Collection<Member> entities) {
         try {
-            ArrayList<Member> result = new ArrayList<Member>(entities.size());
+            ArrayList<Member> result = new ArrayList<>(entities.size());
             for (Member entity : entities) {
                 result.add(em.merge(entity));
             }
@@ -354,7 +352,7 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     @Override
     public List<Integer> bulkUpdate(List<String> QLs) {
         try {
-            List<Integer> result = new ArrayList<Integer>();
+            List<Integer> result = new ArrayList<>();
             for (String ql : QLs) {
                 result.add(em.createQuery(ql).executeUpdate());
             }
@@ -627,6 +625,11 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
+    public <T> T findUniqueByQL(Class<T> clazz, String QL) {
+        return findUniqueByQL(QL);
+    }
+
+    @Override
     public <T> T findUniqueByQL(String QL, Object... parameters) {
         try {
             Query query = em.createQuery(QL);
@@ -640,6 +643,11 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
         } catch (RuntimeException e) {
             throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
         }
+    }
+
+    @Override
+    public <T> T findUniqueByQL(Class<T> clazz, String QL, Object... parameters) {
+        return findUniqueByQL(QL, parameters);
     }
 
     @Override
@@ -659,6 +667,11 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
+    public <T> T findUniqueByQL(Class<T> clazz, String QL, Map<String, ?> parameters) {
+        return findUniqueByQL(QL, parameters);
+    }
+
+    @Override
     public <T> List<T> findListByQL(String QL) {
         try {
             Query query = em.createQuery(QL);
@@ -667,6 +680,11 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
         } catch (RuntimeException e) {
             throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
         }
+    }
+
+    @Override
+    public <T> List<T> findListByQL(Class<T> clazz, String QL) {
+        return findListByQL(QL);
     }
 
     @Override
@@ -686,6 +704,11 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
+    public <T> List<T> findListByQL(Class<T> clazz, String QL, Object... parameters) {
+        return findListByQL(QL, parameters);
+    }
+
+    @Override
     public <T> List<T> findListByQL(String QL, Map<String, ?> parameters) {
         try {
             Query query = em.createQuery(QL);
@@ -699,6 +722,11 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
         } catch (RuntimeException e) {
             throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
         }
+    }
+
+    @Override
+    public <T> List<T> findListByQL(Class<T> clazz, String QL, Map<String, ?> parameters) {
+        return findListByQL(QL, parameters);
     }
 
     @Override
@@ -744,6 +772,11 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
+    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name) {
+        return findListByNamedQuery(name);
+    }
+
+    @Override
     public <T> List<T> findListByNamedQuery(String name, Map<String, ?> parameters) {
         try {
             Query query = em.createNamedQuery(name);
@@ -757,6 +790,16 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
         } catch (RuntimeException e) {
             throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
         }
+    }
+
+    @Override
+    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Object... parameters) {
+        return findListByNamedQuery(name, parameters);
+    }
+
+    @Override
+    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Map<String, ?> parameters) {
+        return findListByNamedQuery(name, parameters);
     }
 
     @Override
