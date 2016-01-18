@@ -8,6 +8,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -17,11 +18,12 @@ import lombok.Setter;
 @Entity
 @Table(name = "userstore")
 @EqualsAndHashCode(of = "id", callSuper = false)
+@NoArgsConstructor
 public class UserStore implements Serializable {
 
     private static final long serialVersionUID = -1004295437748921023L;
     @EmbeddedId
-    protected UserStorePK id;
+    protected @Getter @Setter UserStorePK userstorePK;
     @JoinColumn(name = "id", referencedColumnName = "id", insertable = false, updatable = false)
     @ManyToOne(optional = false)
     private @Getter @Setter Member owner;
@@ -29,27 +31,16 @@ public class UserStore implements Serializable {
     @ManyToOne(optional = false)
     private @Getter @Setter Storage storage;
 
-    public UserStore() {
-    }
-
     public UserStore(UserStorePK userstorePK) {
-        this.id = userstorePK;
+        this.userstorePK = userstorePK;
     }
 
     public UserStore(long id, int sid, String goods) {
-        this.id = new UserStorePK(id, sid, goods);
-    }
-
-    public UserStorePK getUserstorePK() {
-        return id;
-    }
-
-    public void setUserstorePK(UserStorePK userstorePK) {
-        this.id = userstorePK;
+        this.userstorePK = new UserStorePK(id, sid, goods);
     }
 
     public String getGoods() {
-        return id.getGoods();
+        return userstorePK.getGoods();
     }
 
     @Override

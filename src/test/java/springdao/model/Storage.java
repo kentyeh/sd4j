@@ -10,6 +10,7 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlTransient;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -18,6 +19,8 @@ import lombok.Setter;
  */
 @Entity
 @Table(name = "storage")
+
+@NoArgsConstructor
 @EqualsAndHashCode(of = "sid", callSuper = false)
 public class Storage implements Serializable {
 
@@ -26,18 +29,10 @@ public class Storage implements Serializable {
     private @Getter @Setter Integer sid;
     private @Getter @Setter String location;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "storage")
-    private @Setter List<UserStore> userstoreList;
-
-    public Storage() {
-    }
+    private @Getter(onMethod=@__({@XmlTransient})) @Setter List<UserStore> userstoreList;
 
     public Storage(Integer sid) {
         this.sid = sid;
-    }
-
-    @XmlTransient
-    public List<UserStore> getUserstoreList() {
-        return userstoreList;
     }
     
     @Override

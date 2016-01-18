@@ -25,6 +25,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Table(name = "member")
@@ -37,6 +38,7 @@ import lombok.Setter;
 })
 @Entity
 @EqualsAndHashCode(of = "id", callSuper = false)
+@NoArgsConstructor
 public class Member implements Serializable {
 
     private static final long serialVersionUID = 1191330943030660967L;
@@ -58,15 +60,12 @@ public class Member implements Serializable {
         @JoinColumn(name = "cid", referencedColumnName = "id")})
     private @Getter @Setter Set<Member> contacts;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner", fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<UserStore> userstores;
+    private @Getter @Setter List<UserStore> userstores;
     //It's very important to assign "cascade" attribute,without it the collection not to be saved.
     //重要:沒有指定"cascade"時，collection不會儲存
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner", fetch = FetchType.EAGER, orphanRemoval = true)
 //    @OrderColumn(name = "phone")
     private @Getter @Setter Set<Phone> phones;
-
-    public Member() {
-    }
 
     public Member(Long id) {
         this.id = id;
@@ -76,15 +75,7 @@ public class Member implements Serializable {
         this.id = id;
         this.name = name;
     }
-
-    public List<UserStore> getUserstores() {
-        return userstores;
-    }
-
-    public void setUserstores(List<UserStore> userstores) {
-        this.userstores = userstores;
-    }
-
+    
     @Override
     public String toString() {
         return String.format("%s[%s] is %s", name, id, userType);

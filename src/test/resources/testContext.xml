@@ -29,15 +29,26 @@
         <entry key="jdbc.validationQuery" value="SELECT 1" />
         <entry key="jdbc.testOnBorrow" value="true" />
     </util:map>
-    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close"
+    <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close"
           p:driverClassName="#{appProperies['jdbc.driverClassName']}" p:url="#{appProperies['jdbc.url']}" 
           p:username="#{appProperies['jdbc.username']}" p:password="#{appProperies['jdbc.password']}"
-          p:initialSize="#{appProperies['jdbc.initialSize']}" p:maxActive="#{appProperies['jdbc.maxActive']}" 
+          p:initialSize="#{appProperies['jdbc.initialSize']}" p:maxTotal="#{appProperies['jdbc.maxActive']}" 
           p:maxIdle="#{appProperies['jdbc.maxIdle']}" p:minIdle="#{appProperies['jdbc.minIdle']}"
-          p:maxWait="#{appProperies['jdbc.maxWait']}"/>
+          p:maxWaitMillis="#{appProperies['jdbc.maxWait']}" p:validationQuery="#{appProperies['jdbc.validationQuery']}"
+          p:testOnBorrow="#{appProperies['jdbc.testOnBorrow']}"/>
+    
+     <bean id="alternativeDataSource" class="org.h2.jdbcx.JdbcConnectionPool" destroy-method="dispose">
+        <constructor-arg>
+            <bean class="org.h2.jdbcx.JdbcDataSource">
+                <property name="URL" value="#{appProperies['jdbc.url']}"/>
+                <property name="user" value="#{appProperies['jdbc.username']}"/>
+                <property name="password" value="#{appProperies['jdbc.password']}"/>
+            </bean>
+        </constructor-arg>
+    </bean> 
     <!-- Create Database-->       
     <jdbc:initialize-database data-source="dataSource">
-        <jdbc:script location="classpath:testSchema.sql"/>
+        <jdbc:script location="classpath:testSchema.sql" encoding="UTF-8" execution="INIT"/>
     </jdbc:initialize-database>
 
     <util:properties id="hibernateProperties" >

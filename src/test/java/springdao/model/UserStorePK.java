@@ -5,6 +5,7 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -13,6 +14,7 @@ import lombok.Setter;
  */
 @Embeddable
 @EqualsAndHashCode(of = {"ownerId", "soreageId", "goods"}, callSuper = false)
+@NoArgsConstructor
 public class UserStorePK implements Serializable {
 
     private static final long serialVersionUID = 1794742527018289345L;
@@ -21,9 +23,6 @@ public class UserStorePK implements Serializable {
     @Column(name = "sid")
     private @Getter @Setter int soreageId;
     private @Getter @Setter String goods;
-
-    public UserStorePK() {
-    }
 
     public UserStorePK(long ownerId, int soreageId, String goods) {
         this.ownerId = ownerId;
