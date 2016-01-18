@@ -23,6 +23,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 @Table(name = "member")
 @NamedQueries(
@@ -33,33 +36,34 @@ import javax.validation.constraints.Size;
     resultClass = Member.class)
 })
 @Entity
+@EqualsAndHashCode(of = "id", callSuper = false)
 public class Member implements Serializable {
 
     private static final long serialVersionUID = 1191330943030660967L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private @Getter Long id;
     @Size(max = 20)
     @NotNull
-    private String name;
+    private @Getter @Setter String name;
     @Column(name = "userType")
     @Enumerated(EnumType.STRING)
     @NotNull
-    private SupplyChainMember userType = SupplyChainMember.C;
+    private @Getter @Setter SupplyChainMember userType = SupplyChainMember.C;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "contactbook",
     joinColumns = {
         @JoinColumn(name = "oid", referencedColumnName = "id")},
     inverseJoinColumns = {
         @JoinColumn(name = "cid", referencedColumnName = "id")})
-    private Set<Member> contacts;
+    private @Getter @Setter Set<Member> contacts;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner", fetch = FetchType.LAZY, orphanRemoval = true)
     private List<UserStore> userstores;
     //It's very important to assign "cascade" attribute,without it the collection not to be saved.
     //重要:沒有指定"cascade"時，collection不會儲存
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner", fetch = FetchType.EAGER, orphanRemoval = true)
 //    @OrderColumn(name = "phone")
-    private Set<Phone> phones;
+    private @Getter @Setter Set<Phone> phones;
 
     public Member() {
     }
@@ -73,70 +77,12 @@ public class Member implements Serializable {
         this.name = name;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public SupplyChainMember getUserType() {
-        return userType;
-    }
-
-    public void setUserType(SupplyChainMember userType) {
-        this.userType = userType;
-    }
-
-    public Set<Member> getContacts() {
-        return contacts;
-    }
-
-    public void setContacts(Set<Member> contacts) {
-        this.contacts = contacts;
-    }
-
     public List<UserStore> getUserstores() {
         return userstores;
     }
 
     public void setUserstores(List<UserStore> userstores) {
         this.userstores = userstores;
-    }
-
-    public Set<Phone> getPhones() {
-        return phones;
-    }
-
-    public void setPhones(Set<Phone> phones) {
-        this.phones = phones;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Member other = (Member) obj;
-        if ((this.id == null) ? (other.id != null) : !this.id.equals(other.id)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 97 * hash + (this.id != null ? this.id.hashCode() : 0);
-        return hash;
     }
 
     @Override

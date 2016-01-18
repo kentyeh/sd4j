@@ -8,8 +8,7 @@ import springdao.reposotory.AnnotatedRepositoryManagerExt;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.AfterClass;
@@ -32,11 +31,10 @@ import static org.hamcrest.core.AnyOf.anyOf;
  * @author Kent Yeh
  */
 @ContextConfiguration("classpath:testContext.xml")
+@Log4j2
 public class TestDao4j extends AbstractTestNGSpringContextTests {
 
-    private static Logger logger = LogManager.getLogger(TestDao4j.class);
     @Dao(value = Member.class, name = "annotherDao1")
-    private AnnotherDaoRepository anotherDao1;
     private AnnotherDaoRepository anotherDao2;
     @DaoManager(name = "MM1", daoName = "annotherDao1")
     private RepositoryManager<Member> mm1;
@@ -191,12 +189,14 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
             }
         } catch (Exception e) {
         }
-        assertThat(String.format("test rollback 'testModify%02d' faild", idx),  mm.findFirstByCriteria(ql), is(notNullValue()));
+        assertThat(String.format("test rollback 'testModify%02d' faild", idx), mm.findFirstByCriteria(ql), is(notNullValue()));
     }
+
     @Test(dependsOnMethods = "testRollback")
-    public void afterTestRollback(){
+    public void afterTestRollback() {
         cnt.set(0);
     }
+
     @Test(dependsOnMethods = "afterTestRollback", invocationCount = 11, threadPoolSize = 5)
     public void testRemove() {
         int idx = cnt.getAndIncrement();
@@ -205,7 +205,7 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
         Member member = mm.findFirstByCriteria(ql);
         assertThat("can't find member:" + ql, member, is(notNullValue()));
         mm.remove(member.getId());
-        assertThat(String.format("test remove 'testModify%02d' faild", idx),  mm.findFirstByCriteria(ql), is(nullValue()));
+        assertThat(String.format("test remove 'testModify%02d' faild", idx), mm.findFirstByCriteria(ql), is(nullValue()));
     }
 
     @Test
@@ -217,8 +217,8 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
             if (newbie.getPhones() == null) {
                 newbie.setPhones(new HashSet<Phone>());
             }
-            newbie.getPhones().add(new Phone(newbie, "123456789"));
-            newbie.getPhones().add(new Phone(newbie, "098765432"));
+            newbie.getPhones().add(new Phone("123456789", newbie));
+            newbie.getPhones().add(new Phone("098765432", newbie));
             m.save(newbie);
             Member member = m.findFirstByCriteria("WHERE name = ?1", name);
             assertThat("Ophan insert failed", member, is(notNullValue()));

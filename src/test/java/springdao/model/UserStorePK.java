@@ -3,20 +3,24 @@ package springdao.model;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  *
  * @author Kent
  */
 @Embeddable
+@EqualsAndHashCode(of = {"ownerId", "soreageId", "goods"}, callSuper = false)
 public class UserStorePK implements Serializable {
 
     private static final long serialVersionUID = 1794742527018289345L;
     @Column(name = "id")
-    private long ownerId;
+    private @Getter @Setter long ownerId;
     @Column(name = "sid")
-    private int soreageId;
-    private String goods;
+    private @Getter @Setter int soreageId;
+    private @Getter @Setter String goods;
 
     public UserStorePK() {
     }
@@ -29,60 +33,6 @@ public class UserStorePK implements Serializable {
 
     public UserStorePK(Member owner, Storage storage, String goods) {
         this(owner.getId(), storage.getSid(), goods);
-    }
-
-    public long getOwnerId() {
-        return ownerId;
-    }
-
-    public void setOwnerId(long ownerId) {
-        this.ownerId = ownerId;
-    }
-
-    public int getSoreageId() {
-        return soreageId;
-    }
-
-    public void setSoreageId(int soreageId) {
-        this.soreageId = soreageId;
-    }
-
-    public String getGoods() {
-        return goods;
-    }
-
-    public void setGoods(String goods) {
-        this.goods = goods;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final UserStorePK other = (UserStorePK) obj;
-        if (this.ownerId != other.ownerId) {
-            return false;
-        }
-        if (this.soreageId != other.soreageId) {
-            return false;
-        }
-        if ((this.goods == null) ? (other.goods != null) : !this.goods.equals(other.goods)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 89 * hash + (int) (this.ownerId ^ (this.ownerId >>> 32));
-        hash = 89 * hash + this.soreageId;
-        hash = 89 * hash + (this.goods != null ? this.goods.hashCode() : 0);
-        return hash;
     }
 
     @Override

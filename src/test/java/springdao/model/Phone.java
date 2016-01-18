@@ -6,6 +6,12 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  *
@@ -13,61 +19,16 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "phone")
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(of = "phone", callSuper = false)
+@ToString(includeFieldNames = false, of = "phone")
 public class Phone implements Serializable {
 
     private static final long serialVersionUID = 470086049496896194L;
     @Id
-    private String phone;
+    private @Getter @Setter String phone;
     @ManyToOne
     @JoinColumn(name = "id", referencedColumnName = "id")
-    private Member owner;
-
-    public Phone() {
-    }
-
-    public Phone(Member owner, String phone) {
-        this.phone = phone;
-        this.owner = owner;
-    }
-
-    public Member getOwner() {
-        return owner;
-    }
-
-    public void setOwner(Member owner) {
-        this.owner = owner;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Phone other = (Phone) obj;
-        if ((this.phone == null) ? (other.phone != null) : !this.phone.equals(other.phone)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        return this.phone == null ? 0 : this.phone.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return phone;
-    }
+    private @Getter @Setter Member owner;
 }
