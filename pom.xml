@@ -2,15 +2,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>springDao</groupId>
+    <groupId>com.github.kentyeh</groupId>
     <artifactId>sd4j</artifactId>
-    <version>5.0.0</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <name>sd4j</name>
-    <url>http://code.google.com/p/sd4j/</url>
-    <description>Note: JDK 7</description>
-
+    <url>https://github.com/kentyeh/sd4j</url>
+    <description>Spring Dao Libray for easy using JPA</description>
+    
     <licenses>
         <license>
             <name>Apache 2</name>
@@ -34,6 +34,107 @@
             </properties>
         </developer>
     </developers>
+    
+    <scm>
+        <connection>scm:git:git@github.com:kentyeh/sd4j.git</connection>
+        <developerConnection>scm:git:git@github.com:kentyeh/sd4j.git</developerConnection>
+        <url>git@github.com:kentyeh/sd4j.git</url>
+    </scm>
+    
+    <profiles>
+        <profile>
+            <id>release</id>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+                </snapshotRepository>
+                <repository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                </repository>
+            </distributionManagement>
+            <build>
+                <plugins>
+                    <!-- Source -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>2.4</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Javadoc -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>2.10.3</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <aggregate>true</aggregate>
+                            <minmemory>128m</minmemory>
+                            <maxmemory>512</maxmemory>
+                            <breakiterator>true</breakiterator>
+                            <quiet>true</quiet>
+                            <source>${maven.compiler.source}</source>
+                            <verbose>false</verbose>
+                            <linksource>true</linksource>
+                            <detectLinks>true</detectLinks>
+                            <detectOfflineLinks>true</detectOfflineLinks>
+                            <detectJavaApiLink>true</detectJavaApiLink>
+                            <links>
+                                <link>http://docs.oracle.com/javase/8/docs/api/</link>
+                                <link>http://docs.oracle.com/javaee/7/api/</link>
+                                <link>http://docs.spring.io/spring/docs/current/javadoc-api/</link>
+                                <link>http://docs.jboss.org/hibernate/stable/core/javadocs/</link>
+                                <link>http://logging.apache.org/log4j/2.x/log4j-api/apidocs/</link>
+                                <link>http://logging.apache.org/log4j/2.x/log4j-core/apidocs/</link>
+                            </links>
+                        </configuration>
+                    </plugin>
+                    <!-- Gpg Signature -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.6</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -163,12 +264,20 @@
     
     <build>
         <extensions>
-            <extension>    
-                <groupId>org.jvnet.wagon-svn</groupId>
-                <artifactId>wagon-svn</artifactId>
-                <version>1.12</version>
+            <extension>
+                <groupId>org.apache.maven.archetype</groupId>
+                <artifactId>archetype-packaging</artifactId>
+                <version>2.4</version>
             </extension>
         </extensions>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-archetype-plugin</artifactId>
+                    <version>2.4</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <testResources>
             <testResource>
                 <directory>${basedir}/src/test/resources</directory>
@@ -234,35 +343,18 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.3</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <version>2.7</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>net.sourceforge.cobertura</groupId>
+                        <artifactId>cobertura</artifactId>
+                        <version>2.1.1</version>
+                    </dependency>
+                </dependencies>
                 <configuration>
-                    <aggregate>true</aggregate>
-                    <minmemory>128m</minmemory>
-                    <maxmemory>512</maxmemory>
-                    <breakiterator>true</breakiterator>
-                    <quiet>true</quiet>
-                    <source>${maven.compiler.source}</source>
-                    <verbose>false</verbose>
-                    <linksource>true</linksource>
-                    <links>
-                        <link>http://docs.oracle.com/javase/8/docs/api/</link>
-                        <link>http://docs.oracle.com/javaee/7/api/</link>
-                        <link>http://docs.spring.io/spring/docs/current/javadoc-api/</link>
-                        <link>http://docs.jboss.org/hibernate/stable/core/javadocs/</link>
-                        <link>http://logging.apache.org/log4j/2.x/log4j-api/apidocs/</link>
-                        <link>http://logging.apache.org/log4j/2.x/log4j-core/apidocs/</link>
-                    </links>
+                    <argLine>-XX:-UseSplitVerifier</argLine>
                 </configuration>
             </plugin>
         </plugins>

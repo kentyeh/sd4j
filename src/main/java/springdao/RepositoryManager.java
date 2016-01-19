@@ -164,8 +164,24 @@ public class RepositoryManager<E> {
         return dao == null ? "" : dao.getEntityName();
     }
 
+    public String $e() {
+        return getEntityName();
+    }
+
     public String getAliasName() {
         return dao == null ? "" : dao.getAliasName();
+    }
+
+    public String $a() {
+        return getAliasName();
+    }
+
+    public String $a(String field) {
+        return getAliasName() + "." + field;
+    }
+
+    public String $ea() {
+        return getEntityName() + " AS " + getAliasName();
     }
 
     public List<E> findByCriteria(String qlCriteria) {

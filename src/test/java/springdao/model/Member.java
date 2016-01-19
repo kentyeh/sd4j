@@ -30,11 +30,11 @@ import lombok.Setter;
 
 @Table(name = "member")
 @NamedQueries(
-@NamedQuery(name = "Member.findByName", query = "SELECT m FROM Member m WHERE m.name like ?1 ORDER BY m.id"))
+        @NamedQuery(name = "Member.findByName", query = "SELECT m FROM Member m WHERE m.name like ?1 ORDER BY m.id"))
 @NamedNativeQueries({
     @NamedNativeQuery(name = "Member.findNativeByName",
-    query = "select * from member m where m.name like ?1 ORDER BY m.id",
-    resultClass = Member.class)
+            query = "select * from member m where m.name like ?1 ORDER BY m.id",
+            resultClass = Member.class)
 })
 @Entity
 @EqualsAndHashCode(of = "id", callSuper = false)

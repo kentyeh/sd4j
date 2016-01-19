@@ -31,7 +31,7 @@ import springdao.DaoRepository;
  */
 public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepository<E> {
 
-    static Logger logger = LogManager.getLogger(AbstractSpringDao.class);
+    static Logger log = LogManager.getLogger(AbstractSpringDao.class);
     private EntityManagerFactory emf;
     private EntityManager em;
 
@@ -86,7 +86,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         try {
             return getClazz().newInstance();
         } catch (InstantiationException | IllegalAccessException ex) {
-            logger.error("Instanate error", ex);
+            log.error("Instanate error", ex);
             throw ex;
         }
     }
@@ -402,8 +402,23 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     }
 
     @Override
+    public String $e() {
+        return getEntityName();
+    }
+
+    @Override
     public String getEntityName() {
         return getClazz().getName();
+    }
+
+    @Override
+    public String $a() {
+        return getAliasName();
+    }
+
+    @Override
+    public String $ea() {
+        return getEntityName() + " AS " + getAliasName();
     }
 
     @Override
@@ -450,47 +465,37 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
 
     @Override
     public List<E> findByCriteria(String qlCriteria) {
-        StringBuilder sb = new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
-                append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria);
-        return findList(em.createQuery(sb.toString()));
+        return findList(em.createQuery(JpqlHelper.get().select($a()).
+                from($ea()).$(qlCriteria).ql()));
     }
 
     @Override
     public List<E> findByCriteria(String qlCriteria, Object... parameters) {
-        StringBuilder sb = new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
-                append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria);
-        return findList(em.createQuery(sb.toString()), parameters);
+        return findList(em.createQuery(JpqlHelper.get().select($a()).
+                from($ea()).$(qlCriteria).ql()), parameters);
     }
 
     @Override
     public List<E> findByCriteria(String qlCriteria, Map<String, ?> parameters) {
-        StringBuilder sb = new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
-                append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria);
-        return findList(em.createQuery(sb.toString()), parameters);
+        return findList(em.createQuery(JpqlHelper.get().select($a()).from($ea())
+                .$(qlCriteria).ql()), parameters);
     }
 
     @Override
     public List<E> findByJoinCriteria(String joins, String qlCriteria) {
-        StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
-                append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
-                append(joins).append(" ").append(qlCriteria);
-        return findList(em.createQuery(sb.toString()));
+        return findList(em.createQuery(JpqlHelper.get().selectDistinct($a()).from($ea()).join().$(qlCriteria).ql()));
     }
 
     @Override
     public List<E> findByJoinCriteria(String joins, String qlCriteria, Object... parameters) {
-        StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
-                append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
-                append(joins).append(" ").append(qlCriteria);
-        return findList(em.createQuery(sb.toString()));
+        return findList(em.createQuery(JpqlHelper.get().selectDistinct($a())
+                .from($ea()).$(joins).$(qlCriteria).ql()));
     }
 
     @Override
     public List<E> findByJoinCriteria(String joins, String qlCriteria, Map<String, ?> parameters) {
-        StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
-                append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
-                append(joins).append(" ").append(qlCriteria);
-        return findList(em.createQuery(sb.toString()), parameters);
+        return findList(em.createQuery(JpqlHelper.get().selectDistinct($a())
+                .from($ea()).$(joins).$(qlCriteria).ql()), parameters);
     }
 
     @Override
@@ -500,9 +505,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         } else if (parameters == null || parameters.length == 0) {
             return findByCriteria(qlCriteria, startPageNo, pageSize);
         } else {
-            StringBuilder sb = new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
-                    append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria);
-            return findList(em.createQuery(sb.toString()).
+            return findList(em.createQuery(JpqlHelper.get().select($a()).from($ea()).$(qlCriteria).ql()).
                     setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize), parameters);
         }
     }
@@ -514,9 +517,8 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         } else if (parameters == null || parameters.isEmpty()) {
             return findByCriteria(qlCriteria, startPageNo, pageSize);
         } else {
-            StringBuilder sb = new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
-                    append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria);
-            return findList(em.createQuery(sb.toString()).setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize), parameters);
+            return findList(em.createQuery(JpqlHelper.get().select($a()).from($ea()).$(qlCriteria).ql())
+                    .setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize), parameters);
         }
     }
 
@@ -529,10 +531,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         } else if (parameters == null || parameters.length == 0) {
             return findByCriteria(qlCriteria, startPageNo, pageSize);
         } else {
-            StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
-                    append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
-                    append(joins).append(" ").append(qlCriteria);
-            return findList(em.createQuery(sb.toString()).
+            return findList(em.createQuery(JpqlHelper.get().selectDistinct($a()).from($ea()).$(joins).$(qlCriteria).ql()).
                     setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize), parameters);
         }
     }
@@ -546,10 +545,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         } else if (parameters == null || parameters.isEmpty()) {
             return findByCriteria(qlCriteria, startPageNo, pageSize);
         } else {
-            StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
-                    append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
-                    append(joins).append(" ").append(qlCriteria);
-            return findList(em.createQuery(sb.toString()).
+            return findList(em.createQuery(JpqlHelper.get().selectDistinct($a()).from($ea()).$(joins).$(qlCriteria).ql()).
                     setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize), parameters);
         }
     }
@@ -559,21 +555,17 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         if ((startPageNo < 1) || (pageSize < 1)) {
             return findByCriteria(qlCriteria);
         } else {
-            StringBuilder sb = new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
-                    append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria);
-            return findList(em.createQuery(sb.toString()).setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize));
+            return findList(em.createQuery(JpqlHelper.get().select($a()).from($ea()).$(qlCriteria).ql()).setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize));
         }
     }
 
     @Override
     public List<E> findByJoinCriteria(String joins, final String qlCriteria, final int startPageNo, final int pageSize) {
-        final StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
-                append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
-                append(joins).append(" ").append(qlCriteria);
+        final JpqlHelper jpql = JpqlHelper.get().selectDistinct($a()).from($ea()).$(joins).$(qlCriteria);
         if ((startPageNo < 1) || (pageSize < 1)) {
-            return findList(em.createQuery(sb.toString()));
+            return findList(em.createQuery(jpql.ql()));
         } else {
-            return findList(em.createQuery(sb.toString()).setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize));
+            return findList(em.createQuery(jpql.ql()).setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize));
         }
     }
 
@@ -686,7 +678,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
             return query.getResultList();
         } catch (RuntimeException e) {
-            logger.error(e.getMessage(), e);
+            log.error(e.getMessage(), e);
             throw convertException(e);
         }
     }

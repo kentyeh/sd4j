@@ -33,8 +33,10 @@ import springdao.model.Member;
 @Log4j2
 public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<Member> {
 
-    private @Getter EntityManagerFactory entityManagerFactory;
-    private @Getter EntityManager entityManager;
+    private @Getter
+    EntityManagerFactory entityManagerFactory;
+    private @Getter
+    EntityManager entityManager;
 
     @Override
     public Class<Member> getClazz() {
@@ -389,6 +391,21 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     @Override
     public String getEntityName() {
         return getClazz().getName();
+    }
+
+    @Override
+    public String $e() {
+        return getEntityName();
+    }
+
+    @Override
+    public String $a() {
+        return getAliasName();
+    }
+
+    @Override
+    public String $ea() {
+        return getEntityName() + " AS " + getAliasName();
     }
 
     @Override

@@ -10,7 +10,7 @@ import springdao.RepositoryManager;
  */
 public class DaoPropertyEditor extends PropertyEditorSupport {
 
-    private RepositoryManager<?> daoManager;
+    private final RepositoryManager<?> daoManager;
 
     public DaoPropertyEditor(RepositoryManager<?> daoManager) {
         this.daoManager = daoManager;

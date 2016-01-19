@@ -15,13 +15,13 @@ public interface DaoRepository<E> {
     /**
      * return type of handle object.<br/>
      * 取回DAO物件真正對應所要處理的物件
-     * @return 
+     * @return
      */
     public Class<E> getClazz();
 
     /**
      * build a instance of &lt;E&gt;.
-     * @return 
+     * @return
      */
     public E instanate() throws InstantiationException, IllegalAccessException;
 
@@ -32,9 +32,9 @@ public interface DaoRepository<E> {
     public void clear();
 
     /**
-     * Check if this instance is associated with this Session. 
+     * Check if this instance is associated with this Session.
      * @param entity
-     * @return 
+     * @return
      */
     boolean contains(Object entity);
 
@@ -64,7 +64,7 @@ public interface DaoRepository<E> {
      * @param entity entity(物件)
      */
     public E save(E entity);
-    
+
     /**
      * Save multipal entities.<br/>
      * 一次儲存多個物件
@@ -79,7 +79,7 @@ public interface DaoRepository<E> {
     public E persist(E entity);
 
     /**
-     * Make an instance managed and persistent. 
+     * Make an instance managed and persistent.
      */
     public E persist(String entityName, E entity);
 
@@ -173,6 +173,7 @@ public interface DaoRepository<E> {
     /**
      * Lock entity with lockMode.<br/>
      * 以指定的層級鎖定物件
+     * @param entityName
      * @param entity
      * @param lockMode
      * @return
@@ -213,18 +214,41 @@ public interface DaoRepository<E> {
     public String getEntityName();
 
     /**
-     * Default  alias of entity.<br/>
+     * alias for {@link #getEntityName() getEntityName()}.
+     * {@link #getEntityName() getEntityName()}的別名
+     * @return 類別名稱
+     */
+    public String $e();
+
+    /**
+     * Default alias of entity.<br/>
      * Lowercase first character of class name.<br/>
      * 取得預設查詢所使用的別名<br/>
      * 實際上是等於 類別名稱的第一碼改為小寫
+     *
      * @return
      */
     public String getAliasName();
 
     /**
-     * Query by criteria by invoke {@link #findByCriteria(String ,int ,int ) findByCriteria(criteria, 0, 0)}.<br/>
-     * 條件查詢<br/>
-     * 會叫用{@link #findByCriteria(String ,int ,int ) findByCriteria(criteria, 0, 0)}
+     * alias for {@link #getAliasName() getAliasName()}.
+     * {@link #getAliasName() getAliasName()}的別名
+     * @return
+     */
+    public String $a();
+
+    /**
+     * return {@link #$e() $e()}+&quot;&nbsp;&quot;+{@link #$a() $a()}.
+     * 回傳{@link #$e() $e()}+&quot;與&quot;+{@link #$a() $a()}的組合
+     * @return
+     */
+    public String $ea();
+
+    
+    /**
+     * Query by criteria by invoke
+     * {@link #findByCriteria(String ,int ,int ) findByCriteria(criteria, 0, 0)}.<br/>
+     * 條件查詢<br/>會叫用{@link #findByCriteria(String ,int ,int ) findByCriteria(criteria, 0, 0)}
      * @param qlCriteria QL 的查詢條件
      * @return List of entities. 物件集合
      */
@@ -367,39 +391,39 @@ public interface DaoRepository<E> {
     public List<E> findBySQLQuery(String sql, String entityAlias, Map<String, ?> parameters);
 
     public <T> T findUniqueByQL(String QL);
-    
+
     public <T> T findUniqueByQL(Class<T> clazz, String QL);
 
     public <T> T findUniqueByQL(String QL, Object... parameters);
-    
+
     public <T> T findUniqueByQL(Class<T> clazz, String QL, Object... parameters);
 
     public <T> T findUniqueByQL(String QL, Map<String, ?> parameters);
-    
+
     public <T> T findUniqueByQL(Class<T> clazz, String QL, Map<String, ?> parameters);
 
     public <T> List<T> findListByQL(String QL);
-    
+
     public <T> List<T> findListByQL(Class<T> clazz, String QL);
 
     public <T> List<T> findListByQL(String QL, Object... parameters);
-    
+
     public <T> List<T> findListByQL(Class<T> clazz, String QL, Object... parameters);
 
     public <T> List<T> findListByQL(String QL, Map<String, ?> parameters);
-    
+
     public <T> List<T> findListByQL(Class<T> clazz, String QL, Map<String, ?> parameters) ;
 
     public <T> List<T> findListByNamedQuery(String name);
-    
+
     public <T> List<T> findListByNamedQuery(Class<T> clazz, String name);
 
     public <T> List<T> findListByNamedQuery(String name, Object... parameters);
-    
+
     public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Object... parameters);
 
     public <T> List<T> findListByNamedQuery(String name, Map<String, ?> parameters);
-    
+
     public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Map<String, ?> parameters);
 
     public E initLazyCollection(E entity, String collectionFieldName);
