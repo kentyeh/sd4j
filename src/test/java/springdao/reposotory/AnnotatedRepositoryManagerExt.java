@@ -1,7 +1,6 @@
 package springdao.reposotory;
 
 import org.springframework.transaction.annotation.Transactional;
-import springdao.AnnotatedRepositoryManager;
 
 /**
  *

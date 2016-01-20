@@ -1,5 +1,6 @@
 package springdao;
 
+import springdao.reposotory.AnnotatedRepositoryManager;
 import springdao.model.SupplyChainMember;
 import java.util.HashSet;
 import springdao.model.Phone;
@@ -16,6 +17,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import springdao.model.Member;
 import springdao.reposotory.RepositoryManagerExt;
+import springdao.support.JpqlHelper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -25,7 +27,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.hamcrest.core.AnyOf.anyOf;
-import springdao.support.JpqlHelper;
+import springdao.reposotory.CustomManager;
 
 /**
  *
@@ -60,8 +62,10 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
     private RepositoryManager<Member> mmB;
     List<RepositoryManager<Member>> mms = new ArrayList<>();
     RepositoryManager<Member>[] mma;
-    @DaoManager(Phone.class)
+    @DaoManager
     private RepositoryManager<Phone> phoneManager;
+    @DaoManager
+    private CustomManager<Member> mmC;
     List<Member> lazys = new ArrayList<>();
     private final AtomicInteger cnt = new AtomicInteger(0);
 
@@ -102,6 +106,8 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
         mms.add(mmA);
         assertThat("mmB expect RepositoryManagerExt.class.", mmB, is(instanceOf(AnnotatedRepositoryManager.class)));
         mms.add(mmB);
+        assertThat("mmC expect CustomManager.class.", mmC, is(instanceOf(CustomManager.class)));
+        mms.add(mmC);
         mma = new RepositoryManager[mms.size()];
         mma = mms.toArray(mma);
     }
@@ -110,7 +116,7 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
     public void tearDown() {
     }
 
-    @Test(invocationCount = 11, threadPoolSize = 5)
+    @Test(invocationCount = 12, threadPoolSize = 5)
     public void testNew() {
         int idx = cnt.getAndIncrement();
         RepositoryManager<Member> mm = mma[idx++];
@@ -152,11 +158,11 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
         assertThat("init lazy collection failed", lazy.getUserstores().size(), is(greaterThan(0)));
     }
 
-    @Test(dependsOnMethods = "testReattachAndInitCollection", invocationCount = 11, threadPoolSize = 5)
+    @Test(dependsOnMethods = "testReattachAndInitCollection", invocationCount = 12, threadPoolSize = 5)
     public void testModify() {
         int idx = cnt.getAndIncrement();
         RepositoryManager<Member> mm = mma[idx++];
-        String ql = String.format(JpqlHelper.get().where("name ='testNew%02d'").orderBy("name").ql(), idx);
+        String ql = JpqlHelper.get().where("name ='testNew%02d'").orderBy("name").format(idx);
         Member member = mm.findFirstByCriteria(ql);
         assertThat("can't find member:" + ql, member, is(notNullValue()));
         member.setName(String.format("testModify%02d", idx));
@@ -174,11 +180,11 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
         cnt.set(0);
     }
 
-    @Test(dependsOnMethods = "checkModify", invocationCount = 11, threadPoolSize = 5)
+    @Test(dependsOnMethods = "checkModify", invocationCount = 12, threadPoolSize = 5)
     public void testRollback() {
         int idx = cnt.getAndIncrement();
         RepositoryManager<Member> mm = mma[idx++];
-        String ql = String.format(JpqlHelper.get().where("name ='testModify%02d'").orderBy("name").ql(), idx);
+        String ql = JpqlHelper.get().where("name ='testModify%02d'").orderBy("name").format(idx);
         Member member = mm.findFirstByCriteria(ql);
         assertThat("can't find member:" + ql, member, is(notNullValue()));
         member.setName("RooBeck");
@@ -198,11 +204,11 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
         cnt.set(0);
     }
 
-    @Test(dependsOnMethods = "afterTestRollback", invocationCount = 11, threadPoolSize = 5)
+    @Test(dependsOnMethods = "afterTestRollback", invocationCount = 12, threadPoolSize = 5)
     public void testRemove() {
         int idx = cnt.getAndIncrement();
         RepositoryManager<Member> mm = mma[idx++];
-        String ql = String.format(JpqlHelper.get().where("name ='testModify%02d'").orderBy("name").ql(), idx);
+        String ql = JpqlHelper.get().where("name ='testModify%02d'").orderBy("name").format(idx);
         Member member = mm.findFirstByCriteria(ql);
         assertThat("can't find member:" + ql, member, is(notNullValue()));
         mm.remove(member.getId());
@@ -250,7 +256,7 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
     @Test
     public void testFindUniqueByQL2() {
         for (RepositoryManager<Member> m : mms) {
-            Object[] res = m.findUniqueByQL(null, JpqlHelper.get().select().count(m.$a()).max("name").from(m.$ea()).ql());
+            Object[] res = m.findUniqueByQL(null, JpqlHelper.get().select().count(m.$a()).cMax("name").from(m.$ea()).ql());
             assertThat("Multiple field query wrong", res.length, is(equalTo(2)));
         }
     }
@@ -267,7 +273,7 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
     @Test
     public void testFindListByQL2() {
         for (RepositoryManager<Member> m : mms) {
-            List<Object[]> res = m.findListByQL(null, JpqlHelper.get().select(m.$a("name")).$(m.$a("userType")).from(m.$ea()).ql());
+            List<Object[]> res = m.findListByQL(null, JpqlHelper.get().select(m.$a("name")).$c(m.$a("userType")).from(m.$ea()).ql());
             assertThat("Free QL query wrong", res.size(), is(greaterThan(0)));
             assertThat("Free QL query wrong", (SupplyChainMember) res.get(0)[1], is(anyOf(is(SupplyChainMember.C), is(SupplyChainMember.V), is(SupplyChainMember.W))));
         }

@@ -69,16 +69,6 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
-    public boolean isJpql() {
-        return false;
-    }
-
-    @Override
-    public void setJpql(boolean jpql) {
-        //
-    }
-
-    @Override
     public Member instanate() throws InstantiationException, IllegalAccessException {
         try {
             return getClazz().newInstance();
@@ -174,11 +164,6 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
         } catch (RuntimeException e) {
             throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
         }
-    }
-
-    @Override
-    public Member persist(String entityName, Member entity) {
-        return persist(entity);
     }
 
     @Override
@@ -307,11 +292,6 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
         } catch (RuntimeException e) {
             throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
         }
-    }
-
-    @Override
-    public Member lock(String entityName, Member entity, String lockMode) {
-        return lock(entity, lockMode);
     }
 
     @Override
@@ -592,34 +572,6 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     @Override
     public List<Member> findBySQLQuery(String sql, Map<String, ?> parameters) {
         return findList(entityManager.createNativeQuery(sql, getClazz()), parameters);
-    }
-
-    /**
-     *
-     * @param sql
-     * @param entityAlias not work here
-     * @return
-     */
-    @Override
-    public List<Member> findBySQLQuery(String sql, String entityAlias) {
-        return findBySQLQuery(sql);
-    }
-
-    /**
-     *
-     * @param sql
-     * @param entityAlias not work here.
-     * @param parameters
-     * @return
-     */
-    @Override
-    public List<Member> findBySQLQuery(String sql, String entityAlias, Object... parameters) {
-        return findBySQLQuery(sql, parameters);
-    }
-
-    @Override
-    public List<Member> findBySQLQuery(String sql, String entityAlias, Map<String, ?> parameters) {
-        return findBySQLQuery(sql, parameters);
     }
 
     @Override

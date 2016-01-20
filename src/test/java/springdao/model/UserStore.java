@@ -17,7 +17,7 @@ import lombok.Setter;
  */
 @Entity
 @Table(name = "userstore")
-@EqualsAndHashCode(of = "id", callSuper = false)
+@EqualsAndHashCode(of = "userstorePK", callSuper = false)
 @NoArgsConstructor
 public class UserStore implements Serializable {
 

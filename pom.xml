@@ -92,9 +92,9 @@
                             <source>${maven.compiler.source}</source>
                             <verbose>false</verbose>
                             <linksource>true</linksource>
-                            <detectLinks>true</detectLinks>
-                            <detectOfflineLinks>true</detectOfflineLinks>
-                            <detectJavaApiLink>true</detectJavaApiLink>
+                            <detectLinks>false</detectLinks>
+                            <detectOfflineLinks>false</detectOfflineLinks>
+                            <detectJavaApiLink>false</detectJavaApiLink>
                             <links>
                                 <link>http://docs.oracle.com/javase/8/docs/api/</link>
                                 <link>http://docs.oracle.com/javaee/7/api/</link>

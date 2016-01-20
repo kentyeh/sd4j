@@ -31,7 +31,7 @@ import springdao.DaoRepository;
  */
 public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepository<E> {
 
-    static Logger log = LogManager.getLogger(AbstractSpringDao.class);
+    private static final Logger log = LogManager.getLogger(AbstractSpringDao.class);
     private EntityManagerFactory emf;
     private EntityManager em;
 
@@ -69,16 +69,6 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         } catch (RuntimeException ex) {
             return LockModeType.NONE;
         }
-    }
-
-    @Override
-    public boolean isJpql() {
-        return true;
-    }
-
-    @Override
-    public void setJpql(boolean jpql) {
-        //
     }
 
     @Override
@@ -190,11 +180,6 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     }
 
     @Override
-    public E persist(String entityName, E entity) {
-        return persist(entity);
-    }
-
-    @Override
     public E update(E entity) {
         return merge(entity);
     }
@@ -253,7 +238,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
      * vs. merge</a>.
      *
      * @param entity
-     * @return
+     * @return merged entity
      */
     @Override
     public E saveOrUpdate(E entity) {
@@ -320,11 +305,6 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         } catch (RuntimeException e) {
             throw convertException(e);
         }
-    }
-
-    @Override
-    public E lock(String entityName, E entity, String lockMode) {
-        return lock(entity, lockMode);
     }
 
     @Override
@@ -582,34 +562,6 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     @Override
     public List<E> findBySQLQuery(String sql, Map<String, ?> parameters) {
         return findList(em.createNativeQuery(sql, getClazz()), parameters);
-    }
-
-    /**
-     *
-     * @param sql
-     * @param entityAlias not work here
-     * @return
-     */
-    @Override
-    public List<E> findBySQLQuery(String sql, String entityAlias) {
-        return findBySQLQuery(sql);
-    }
-
-    /**
-     *
-     * @param sql
-     * @param entityAlias not work here.
-     * @param parameters
-     * @return
-     */
-    @Override
-    public List<E> findBySQLQuery(String sql, String entityAlias, Object... parameters) {
-        return findBySQLQuery(sql, parameters);
-    }
-
-    @Override
-    public List<E> findBySQLQuery(String sql, String entityAlias, Map<String, ?> parameters) {
-        return findBySQLQuery(sql, parameters);
     }
 
     @Override

@@ -34,7 +34,7 @@ import springdao.support.SimpleSpringDao;
 public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter implements Ordered,
         ApplicationContextAware, InitializingBean {
 
-    private static final Logger logger = LogManager.getLogger(DaoAnnotationBeanPostProcessor.class);
+    private static final Logger log = LogManager.getLogger(DaoAnnotationBeanPostProcessor.class);
     private ApplicationContext context;
     private ConfigurableApplicationContext regContext;
     private static final AtomicInteger defcnt = new AtomicInteger(0);
@@ -61,10 +61,10 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
         try {
             return context.getBean(name, requiredType);
         } catch (NoSuchBeanDefinitionException ex) {
-            logger.warn("Bean name '{}' with {} not exists.", name, requiredType.getSimpleName());
+            log.warn("Bean name '{}' with {} not exists.", name, requiredType.getSimpleName());
             return null;
         } catch (BeansException ex) {
-            logger.warn(String.format("Can't get %s[%s] bean.", requiredType.getSimpleName(), name), ex);
+            log.warn(String.format("Can't get %s[%s] bean.", requiredType.getSimpleName(), name), ex);
             return null;
         }
     }
@@ -132,7 +132,7 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                         } else {
                             throw new BeanNotOfRequiredTypeException(field.getName(), DaoRepository.class, field.getType());
                         }
-                        logger.debug("Build, and inject field with bean {}@{}<{}>", daoName, resultDao.getClass().getSimpleName(), assoicateType.getSimpleName());
+                        log.debug("Build, and inject field with bean {}@{}<{}>", daoName, resultDao.getClass().getSimpleName(), assoicateType.getSimpleName());
                     }
                     ReflectionUtils.makeAccessible(field);
                     field.set(bean, resultDao);
@@ -202,7 +202,7 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                         resultManager.setDao(resultDao);
                     }
                     ReflectionUtils.makeAccessible(field);
-                    logger.debug("Inject {} with {}", field.getName(), resultManager.getClass());
+                    log.debug("Inject {} with {}", field.getName(), resultManager.getClass());
                     field.set(bean, resultManager);
                 }
             }
@@ -263,10 +263,10 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                     }
                     ReflectionUtils.makeAccessible(method);
                     try {
-                        logger.debug("Inject {}({}) with {}", new Object[]{method.getName(), fc.getSimpleName(), resultDao.getClass()});
+                        log.debug("Inject {}({}) with {}", new Object[]{method.getName(), fc.getSimpleName(), resultDao.getClass()});
                         method.invoke(bean, resultDao);
                     } catch (InvocationTargetException ex) {
-                        logger.error(ex.getMessage(), ex);
+                        log.error(ex.getMessage(), ex);
                     }
                 }
                 final DaoManager ormm = method.getAnnotation(DaoManager.class);
@@ -335,10 +335,10 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
                     }
                     ReflectionUtils.makeAccessible(method);
                     try {
-                        logger.debug("Inject {}({}) with {}", new Object[]{method.getName(), fc.getSimpleName(), resultManager.getClass()});
+                        log.debug("Inject {}({}) with {}", new Object[]{method.getName(), fc.getSimpleName(), resultManager.getClass()});
                         method.invoke(bean, resultManager);
                     } catch (InvocationTargetException ex) {
-                        logger.error(ex.getMessage(), ex);
+                        log.error(ex.getMessage(), ex);
                     }
                 }
             }

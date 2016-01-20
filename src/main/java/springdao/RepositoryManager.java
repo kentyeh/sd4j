@@ -71,11 +71,6 @@ public class RepositoryManager<E> {
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public E persist(String entityName, E entity) {
-        return dao == null ? null : dao.persist(entityName, entity);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public E update(E entity) {
         return dao == null ? null : dao.update(entity);
     }

@@ -11,8 +11,8 @@
        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
        http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
-<!--support JSR-250-->
-    <bean class="org.springframework.context.annotation.CommonAnnotationBeanPostProcessor"/> 
+    <context:annotation-config/> 
+    <tx:annotation-driven/>
     <!-- processing @Dao and @DaoManager-->
     <bean class="springdao.DaoAnnotationBeanPostProcessor"/>
     <!--define applcaiton properties-->
@@ -82,11 +82,5 @@
     <bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
         <property name="entityManagerFactory" ref="entityManagerFactory"/>
         <property name="dataSource" ref="dataSource"/>
-    </bean>
-    
-    <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/> 
-    
-    <!--Enabled @Transactional
-    <context:spring-configured/>-->
-    <tx:annotation-driven/>
+    </bean>    
 </beans>
