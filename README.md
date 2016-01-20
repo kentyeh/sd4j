@@ -62,3 +62,29 @@ public String App(){
 }
 ```
 Other example look [TestDao4j.java](https://github.com/kentyeh/sd4j/blob/master/src/test/java/springdao/TestDao4j.java).
+
+# Tips
+Spring web mvc help type conversion.
+
+for example: convert primitive String or int  to jpa entity.
+```
+import springdao.DaoManager;
+import springdao.RepositoryManager;
+import springdao.support.DaoPropertyEditor;
+
+@Controller
+public class WebController {
+  @DaoManager
+    private RepositoryManager<Member> memberManager;
+  @InitBinder
+  public void initBinder(WebDataBinder binder) {
+    binder.registerCustomEditor(Member.class, new DaoPropertyEditor(memberManager));
+  }
+  @RequestMapping("/admin/user/{account}")
+  public String userinfo(@PathVariable Member account, HttpServletRequest request) {
+    account....;
+  }
+}
+```
+When I access http://localhost/admin/user/kent ,
+It will convert account name: "kent" to Member Object.
