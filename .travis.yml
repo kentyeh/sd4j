@@ -13,6 +13,9 @@ language: java
 #jdk:
   #- oraclejdk7
 
+after_success:
+  - mvn clean cobertura:cobertura org.eluder.coveralls:coveralls-maven-plugin:report
+
 ## I will need to set something up to catch these. 
 notifications:
   email:
