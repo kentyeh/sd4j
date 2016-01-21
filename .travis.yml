@@ -1,0 +1,19 @@
+language: java
+
+#install: true
+#mvn install -DskipTests=true
+
+## do the tests
+#script: mvn install
+#mvn test
+
+## a single JVM should be enough.
+## Adding openjdk7 is probably a sensible thing, but means I have to 
+## edit the ant build.xml file which is unfortunate.
+#jdk:
+  #- oraclejdk7
+
+## I will need to set something up to catch these. 
+notifications:
+  email:
+    - kent.yeh2000@gmail.com
