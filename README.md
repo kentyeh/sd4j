@@ -1,6 +1,7 @@
 #Spring Dao Libray for easy using JPA
 
 [![Build Status](https://travis-ci.org/kentyeh/sd4j.svg?branch=master)](https://travis-ci.org/kentyeh/sd4j)
+[![Coverage Status](http://img.shields.io/coveralls/kentyeh/sd4j/master.svg?style=flat-square)](https://coveralls.io/github/kentyeh/sd4j)
 
 SD4J is a easy way to using JPA in spring framework.
 

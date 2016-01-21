@@ -346,7 +346,7 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cobertura-maven-plugin</artifactId>
                 <version>2.7</version>
-                <dependencies>
+                <!--dependencies>
                     <dependency>
                         <groupId>net.sourceforge.cobertura</groupId>
                         <artifactId>cobertura</artifactId>
@@ -355,6 +355,20 @@
                 </dependencies>
                 <configuration>
                     <argLine>-XX:-UseSplitVerifier</argLine>
+                </configuration-->
+                <configuration>
+                    <format>xml</format>
+                    <maxmem>256m</maxmem>
+                    <!-- aggregated reports for multi-module projects -->
+                    <aggregate>false</aggregate>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>4.1.0</version>
+                <configuration>
+                    <repoToken>t8lWRxW9p5DmHgSl8BQPNqS6yU14Vagqn</repoToken>
                 </configuration>
             </plugin>
         </plugins>
