@@ -96,38 +96,43 @@ public class RepositoryManager<E> {
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public E merge(String entityName, E entity) {
-        return dao == null ? null : dao.merge(entityName, entity);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public E saveOrUpdate(E entity) {
         return dao == null ? null : dao.saveOrUpdate(entity);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public E saveOrUpdate(String entityName, E entity) {
-        return dao == null ? null : dao.saveOrUpdate(entityName, entity);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Collection<E> saveOrUpdate(Collection<E> entities) {
-        return dao == null ? null : dao.save(entities);
+        return dao == null ? null : dao.saveOrUpdate(entities);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void remove(Serializable primaryKey) {
+    public void delete(Serializable primaryKey) {
         dao.delete(primaryKey);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void remove(Serializable primaryKey, String lockMode) {
+    public void delete(Serializable primaryKey, String lockMode) {
         dao.delete(primaryKey, lockMode);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void remove(Collection<Serializable> primaryKeys) {
+    public void delete(Collection<? extends Serializable> primaryKeys) {
         dao.delete(primaryKeys);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public E remove(E entity) {
+        return dao.remove(entity);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public E remove(E entity, String lockMode) {
+        return dao.remove(entity, lockMode);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public Collection<E> remove(Collection<E> entities) {
+        return dao.remove(entities);
     }
 
     @Deprecated
@@ -187,28 +192,12 @@ public class RepositoryManager<E> {
         return dao == null ? null : dao.findByCriteria(qlCriteria, parameters);
     }
 
-    public List<E> findByJoinCriteria(String joins, String qlCriteria) {
-        return dao == null ? null : dao.findByJoinCriteria(joins, qlCriteria);
-    }
-
-    public List<E> findByJoinCriteria(String joins, String qlCriteria, Object... parameters) {
-        return dao == null ? null : dao.findByJoinCriteria(joins, qlCriteria, parameters);
-    }
-
     public List<E> findByCriteria(String qlCriteria, int startPageNo, int pageSize, Object... parameters) {
         return dao == null ? null : dao.findByCriteria(qlCriteria, startPageNo, pageSize, parameters);
     }
 
-    public List<E> findByJoinCriteria(String joins, String qlCriteria, int startPageNo, int pageSize, Object... parameters) {
-        return dao == null ? null : dao.findByJoinCriteria(joins, qlCriteria, startPageNo, pageSize, parameters);
-    }
-
     public List<E> findByCriteria(String qlCriteria, int startPageNo, int pageSize) {
         return dao == null ? null : dao.findByCriteria(qlCriteria, startPageNo, pageSize);
-    }
-
-    public List<E> findByJoinCriteria(String joins, String qlCriteria, int startPageNo, int pageSize) {
-        return dao == null ? null : dao.findByJoinCriteria(joins, qlCriteria, startPageNo, pageSize);
     }
 
     public E findFirstByCriteria(String qlCriteria) {
@@ -218,16 +207,6 @@ public class RepositoryManager<E> {
 
     public E findFirstByCriteria(String qlCriteria, Object... parameters) {
         List<E> result = findByCriteria(qlCriteria, 1, 1, parameters);
-        return result.isEmpty() ? null : result.get(0);
-    }
-
-    public E findFirstByJoinCriteria(String joins, String qlCriteria) {
-        List<E> result = findByJoinCriteria(joins, qlCriteria, 1, 1);
-        return result.isEmpty() ? null : result.get(0);
-    }
-
-    public E findFirstByJoinCriteria(String joins, String qlCriteria, Object... parameters) {
-        List<E> result = findByJoinCriteria(joins, qlCriteria, 1, 1, parameters);
         return result.isEmpty() ? null : result.get(0);
     }
 
@@ -349,5 +328,11 @@ public class RepositoryManager<E> {
 
     public E initLazyCollection(E entity, String collectionFieldName) {
         return dao == null ? null : dao.initLazyCollection(entity, collectionFieldName);
+    }
+
+    public void clear() {
+        if (dao != null) {
+            dao.clear();
+        }
     }
 }

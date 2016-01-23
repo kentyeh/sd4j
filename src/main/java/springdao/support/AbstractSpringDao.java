@@ -146,7 +146,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
 
     @Override
     public E save(E entity) {
-        return contains(entity) ? merge(entity) : persist(entity);
+        return persist(entity);
     }
 
     @Override
@@ -154,12 +154,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         try {
             ArrayList<E> result = new ArrayList<>(entities.size());
             for (E entity : entities) {
-                if (em.contains(entity)) {
-                    result.add(em.merge(entity));
-                } else {
-                    em.persist(entity);
-                    result.add(entity);
-                }
+                result.add(persist(entity));
             }
             em.flush();
             return result;
@@ -226,11 +221,6 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         }
     }
 
-    @Override
-    public E merge(String entityName, E entity) {
-        return merge(entity);
-    }
-
     /**
      * Before using this method, look at
      * <a
@@ -242,17 +232,21 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
      */
     @Override
     public E saveOrUpdate(E entity) {
-        return merge(entity);
-    }
-
-    @Override
-    public E saveOrUpdate(String entityName, E entity) {
-        return merge(entity);
+        return contains(entity) ? merge(entity) : emf.getPersistenceUnitUtil().getIdentifier(entity) == null ? persist(entity) : merge(entity);
     }
 
     @Override
     public Collection<E> saveOrUpdate(Collection<E> entities) {
-        return merge(entities);
+        try {
+            ArrayList<E> result = new ArrayList<>(entities.size());
+            for (E entity : entities) {
+                result.add(saveOrUpdate(entity));
+            }
+            em.flush();
+            return result;
+        } catch (RuntimeException e) {
+            throw convertException(e);
+        }
     }
 
     @Override
@@ -283,7 +277,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     }
 
     @Override
-    public void delete(Collection<Serializable> primaryKeys) {
+    public void delete(Collection<? extends Serializable> primaryKeys) {
         try {
             for (Serializable pk : primaryKeys) {
                 Object entity = em.find(getClazz(), pk);
@@ -292,6 +286,42 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
                 }
             }
             em.flush();
+        } catch (RuntimeException e) {
+            throw convertException(e);
+        }
+    }
+
+    @Override
+    public E remove(E entity) {
+        entity = merge(entity);
+        try {
+            em.remove(entity);
+            em.flush();
+            return entity;
+        } catch (RuntimeException e) {
+            throw convertException(e);
+        }
+    }
+
+    @Override
+    public E remove(E entity, String lockMode) {
+        em.lock(entity, getLockMode(lockMode));
+        em.remove(entity);
+        em.flush();
+        return entity;
+    }
+
+    @Override
+    public Collection<E> remove(Collection<E> entities) {
+        try {
+            ArrayList<E> result = new ArrayList<>(entities.size());
+            for (E entity : entities) {
+                entity = merge(entity);
+                em.remove(entity);
+                result.add(entity);
+            }
+            em.flush();
+            return result;
         } catch (RuntimeException e) {
             throw convertException(e);
         }
@@ -403,7 +433,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
 
     @Override
     public String getAliasName() {
-        return AliasHelper.getAlias(getClazz());
+        return AliasHelper.$a(getClazz());
     }
 
     protected List<E> findList(Query query) {
@@ -462,23 +492,6 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     }
 
     @Override
-    public List<E> findByJoinCriteria(String joins, String qlCriteria) {
-        return findList(em.createQuery(JpqlHelper.get().selectDistinct($a()).from($ea()).join().$(qlCriteria).ql()));
-    }
-
-    @Override
-    public List<E> findByJoinCriteria(String joins, String qlCriteria, Object... parameters) {
-        return findList(em.createQuery(JpqlHelper.get().selectDistinct($a())
-                .from($ea()).$(joins).$(qlCriteria).ql()));
-    }
-
-    @Override
-    public List<E> findByJoinCriteria(String joins, String qlCriteria, Map<String, ?> parameters) {
-        return findList(em.createQuery(JpqlHelper.get().selectDistinct($a())
-                .from($ea()).$(joins).$(qlCriteria).ql()), parameters);
-    }
-
-    @Override
     public List<E> findByCriteria(String qlCriteria, int startPageNo, int pageSize, Object... parameters) {
         if ((startPageNo < 1) || (pageSize < 1)) {
             return parameters == null || parameters.length == 0 ? findByCriteria(qlCriteria) : findByCriteria(qlCriteria, parameters);
@@ -503,49 +516,11 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     }
 
     @Override
-    public List<E> findByJoinCriteria(String joins, String qlCriteria, int startPageNo, int pageSize,
-            Object... parameters) {
-        if ((startPageNo < 1) || (pageSize < 1)) {
-            return parameters == null || parameters.length == 0 ? findByJoinCriteria(joins, qlCriteria)
-                    : findByJoinCriteria(joins, qlCriteria, parameters);
-        } else if (parameters == null || parameters.length == 0) {
-            return findByCriteria(qlCriteria, startPageNo, pageSize);
-        } else {
-            return findList(em.createQuery(JpqlHelper.get().selectDistinct($a()).from($ea()).$(joins).$(qlCriteria).ql()).
-                    setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize), parameters);
-        }
-    }
-
-    @Override
-    public List<E> findByJoinCriteria(String joins, String qlCriteria, int startPageNo, int pageSize,
-            Map<String, ?> parameters) {
-        if ((startPageNo < 1) || (pageSize < 1)) {
-            return parameters == null || parameters.isEmpty() ? findByJoinCriteria(joins, qlCriteria)
-                    : findByJoinCriteria(joins, qlCriteria, parameters);
-        } else if (parameters == null || parameters.isEmpty()) {
-            return findByCriteria(qlCriteria, startPageNo, pageSize);
-        } else {
-            return findList(em.createQuery(JpqlHelper.get().selectDistinct($a()).from($ea()).$(joins).$(qlCriteria).ql()).
-                    setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize), parameters);
-        }
-    }
-
-    @Override
     public List<E> findByCriteria(String qlCriteria, int startPageNo, int pageSize) {
         if ((startPageNo < 1) || (pageSize < 1)) {
             return findByCriteria(qlCriteria);
         } else {
             return findList(em.createQuery(JpqlHelper.get().select($a()).from($ea()).$(qlCriteria).ql()).setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize));
-        }
-    }
-
-    @Override
-    public List<E> findByJoinCriteria(String joins, final String qlCriteria, final int startPageNo, final int pageSize) {
-        final JpqlHelper jpql = JpqlHelper.get().selectDistinct($a()).from($ea()).$(joins).$(qlCriteria);
-        if ((startPageNo < 1) || (pageSize < 1)) {
-            return findList(em.createQuery(jpql.ql()));
-        } else {
-            return findList(em.createQuery(jpql.ql()).setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize));
         }
     }
 

@@ -103,17 +103,40 @@ public class AliasHelper {
         reservedWord.add("year".hashCode());
     }
 
-    public static String getAlias(Object obj) {
+    /**
+     * get Alias Name
+     *
+     * @param obj
+     * @return
+     */
+    public static String $a(Object obj) {
         Assert.notNull(obj, "Can't get alias name from null object");
-        return getAlias(obj.getClass());
+        return $a(obj.getClass());
     }
 
-    public static String getAlias(Class<?> clazz) {
+    /**
+     * get Alias Name
+     *
+     * @param clazz
+     * @return
+     */
+    public static String $a(Class<?> clazz) {
         String aliasName = clazz.getSimpleName();
         aliasName = aliasName.substring(0, 1).toLowerCase() + aliasName.substring(1);
         if (reservedWord.contains(aliasName.toLowerCase().hashCode())) {
             aliasName = "_" + aliasName;
         }
         return aliasName;
+    }
+
+    /**
+     * get entityName + &quot;AS&quot; + aliasName
+     *
+     * @param clazz
+     * @return {@link Class#getName() clazz.getName()} + &quot;AS&quot; +
+     * {@link AliasHelper#$a(java.lang.Class) $a(clazz)}
+     */
+    public static String $ea(Class<?> clazz) {
+        return clazz.getName() + " AS " + $a(clazz);
     }
 }

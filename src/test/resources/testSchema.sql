@@ -14,14 +14,15 @@ CREATE TABLE phone(
   constraint phone_fk1 FOREIGN KEY(id) REFERENCES member(id) ON UPDATE CASCADE ON DELETE SET NULL
 );
 CREATE TABLE contactbook(
-  oid          BIGINT ,
-  cid           BIGINT,
+  oid          BIGINT , /*Owner ID*/
+  cid          BIGINT,  /*Contact ID*/
   constraint contactbook_pk primary key(oid,cid),
   constraint cb_fk1 FOREIGN KEY(oid) REFERENCES member(id) ON UPDATE CASCADE,
   constraint cb_fk2 FOREIGN KEY(cid) REFERENCES member(id) ON UPDATE CASCADE
 );
 INSERT INTO contactbook SELECT a.id,b.id FROM member as a inner join member as b on b.name='Jose' where a.name='WareHouse';
 INSERT INTO contactbook SELECT a.id,b.id FROM member as a inner join member as b on b.name='Kent Yeh' where a.name='WareHouse';
+INSERT INTO contactbook SELECT a.id,b.id FROM member as a inner join member as b on b.name='Jose' where a.name='Kent Yeh';
 
 CREATE TABLE storage(
   sid    INT primary key,

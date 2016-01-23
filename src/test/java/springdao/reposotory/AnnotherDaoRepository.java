@@ -134,7 +134,7 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
 
     @Override
     public Member save(Member entity) {
-        return contains(entity) ? merge(entity) : persist(entity);
+        return persist(entity);
     }
 
     @Override
@@ -143,7 +143,7 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
             ArrayList<Member> result = new ArrayList<>(entities.size());
             for (Member entity : entities) {
                 if (entityManager.contains(entity)) {
-                    result.add(entityManager.merge(entity));
+                    result.add(persist(entity));
                 } else {
                     entityManager.persist(entity);
                     result.add(entity);
@@ -213,11 +213,6 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
         }
     }
 
-    @Override
-    public Member merge(String entityName, Member entity) {
-        return merge(entity);
-    }
-
     /**
      * Before using this method, look at
      * <a
@@ -229,17 +224,21 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
      */
     @Override
     public Member saveOrUpdate(Member entity) {
-        return merge(entity);
-    }
-
-    @Override
-    public Member saveOrUpdate(String entityName, Member entity) {
-        return merge(entity);
+        return contains(entity) ? merge(entity) : entityManagerFactory.getPersistenceUnitUtil().getIdentifier(entity) == null ? persist(entity) : merge(entity);
     }
 
     @Override
     public Collection<Member> saveOrUpdate(Collection<Member> entities) {
-        return merge(entities);
+        try {
+            ArrayList<Member> result = new ArrayList<>(entities.size());
+            for (Member entity : entities) {
+                result.add(saveOrUpdate(entity));
+            }
+            entityManager.flush();
+            return result;
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
     }
 
     @Override
@@ -270,7 +269,7 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
-    public void delete(Collection<Serializable> pks) {
+    public void delete(Collection<? extends Serializable> pks) {
         try {
             for (Serializable pk : pks) {
                 Member m = entityManager.find(Member.class, pk);
@@ -279,6 +278,42 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
                 }
             }
             entityManager.flush();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
+    }
+
+    @Override
+    public Member remove(Member entity) {
+        entity = merge(entity);
+        try {
+            entityManager.remove(entity);
+            entityManager.flush();
+            return entity;
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
+    }
+
+    @Override
+    public Member remove(Member entity, String lockMode) {
+        entityManager.lock(entity, getLockMode(lockMode));
+        entityManager.remove(entity);
+        entityManager.flush();
+        return entity;
+    }
+
+    @Override
+    public Collection<Member> remove(Collection<Member> entities) {
+        try {
+            ArrayList<Member> result = new ArrayList<>(entities.size());
+            for (Member entity : entities) {
+                entity = merge(entity);
+                entityManager.remove(entity);
+                result.add(entity);
+            }
+            entityManager.flush();
+            return result;
         } catch (RuntimeException e) {
             throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
         }
@@ -390,7 +425,7 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
 
     @Override
     public String getAliasName() {
-        return AliasHelper.getAlias(getClazz());
+        return AliasHelper.$a(getClazz());
     }
 
     protected List<Member> findList(Query query) {
@@ -450,31 +485,7 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
                 append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria);
         return findList(entityManager.createQuery(sb.toString()), parameters);
     }
-
-    @Override
-    public List<Member> findByJoinCriteria(String joins, String qlCriteria) {
-        StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
-                append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" JOIN ").
-                append(joins).append(" ").append(qlCriteria);
-        return findList(entityManager.createQuery(sb.toString()));
-    }
-
-    @Override
-    public List<Member> findByJoinCriteria(String joins, String qlCriteria, Object... parameters) {
-        StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
-                append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
-                append(joins).append(" ").append(qlCriteria);
-        return findList(entityManager.createQuery(sb.toString()));
-    }
-
-    @Override
-    public List<Member> findByJoinCriteria(String joins, String qlCriteria, Map<String, ?> parameters) {
-        StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
-                append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
-                append(joins).append(" ").append(qlCriteria);
-        return findList(entityManager.createQuery(sb.toString()), parameters);
-    }
-
+    
     @Override
     public List<Member> findByCriteria(String qlCriteria, int startPageNo, int pageSize, Object... parameters) {
         if ((startPageNo < 1) || (pageSize < 1)) {
@@ -502,39 +513,6 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
         }
     }
 
-    @Override
-    public List<Member> findByJoinCriteria(String joins, String qlCriteria, int startPageNo, int pageSize,
-            Object... parameters) {
-        if ((startPageNo < 1) || (pageSize < 1)) {
-            return parameters == null || parameters.length == 0 ? findByJoinCriteria(joins, qlCriteria)
-                    : findByJoinCriteria(joins, qlCriteria, parameters);
-        } else if (parameters == null || parameters.length == 0) {
-            return findByCriteria(qlCriteria, startPageNo, pageSize);
-        } else {
-            StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
-                    append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
-                    append(joins).append(" ").append(qlCriteria);
-            return findList(entityManager.createQuery(sb.toString()).
-                    setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize), parameters);
-        }
-    }
-
-    @Override
-    public List<Member> findByJoinCriteria(String joins, String qlCriteria, int startPageNo, int pageSize,
-            Map<String, ?> parameters) {
-        if ((startPageNo < 1) || (pageSize < 1)) {
-            return parameters == null || parameters.isEmpty() ? findByJoinCriteria(joins, qlCriteria)
-                    : findByJoinCriteria(joins, qlCriteria, parameters);
-        } else if (parameters == null || parameters.isEmpty()) {
-            return findByCriteria(qlCriteria, startPageNo, pageSize);
-        } else {
-            StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
-                    append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
-                    append(joins).append(" ").append(qlCriteria);
-            return findList(entityManager.createQuery(sb.toString()).
-                    setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize), parameters);
-        }
-    }
 
     @Override
     public List<Member> findByCriteria(String qlCriteria, int startPageNo, int pageSize) {
@@ -543,18 +521,6 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
         } else {
             StringBuilder sb = new StringBuilder("SELECT ").append(getAliasName()).append(" FROM ").
                     append(getEntityName()).append("  ").append(getAliasName()).append(" ").append(qlCriteria);
-            return findList(entityManager.createQuery(sb.toString()).setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize));
-        }
-    }
-
-    @Override
-    public List<Member> findByJoinCriteria(String joins, final String qlCriteria, final int startPageNo, final int pageSize) {
-        final StringBuilder sb = new StringBuilder("SELECT DISTINCT ").append(getAliasName()).
-                append(" FROM ").append(getEntityName()).append(" ").append(getAliasName()).append(" ").
-                append(joins).append(" ").append(qlCriteria);
-        if ((startPageNo < 1) || (pageSize < 1)) {
-            return findList(entityManager.createQuery(sb.toString()));
-        } else {
             return findList(entityManager.createQuery(sb.toString()).setFirstResult((startPageNo - 1) * pageSize).setMaxResults(pageSize));
         }
     }

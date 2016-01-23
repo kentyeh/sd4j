@@ -7,7 +7,7 @@
                 <RollingRandomAccessFile name="sd4j-FastRollingFile" fileName="${sys:log.foder}/sd4j.log"
                         filePattern="${sys:log.foder}/sd4j-%d{MM-dd-yyyy}-%i.log.gz">
                         <PatternLayout>
-                                <pattern>%d %p %C{1.} [%t] %m%n%ex{full}%n</pattern>
+                                <pattern>%d %p %C{1.}.%M(%L) [%t] %m%n%ex{full}%n</pattern>
                         </PatternLayout>
                         <Policies>
                                 <TimeBasedTriggeringPolicy />

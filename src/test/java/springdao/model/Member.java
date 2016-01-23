@@ -54,16 +54,20 @@ public class Member implements Serializable {
     private @Getter @Setter SupplyChainMember userType = SupplyChainMember.C;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "contactbook",
-    joinColumns = {
-        @JoinColumn(name = "oid", referencedColumnName = "id")},
-    inverseJoinColumns = {
-        @JoinColumn(name = "cid", referencedColumnName = "id")})
+            joinColumns = {
+                @JoinColumn(name = "oid", referencedColumnName = "id")},
+            inverseJoinColumns = {
+                @JoinColumn(name = "cid", referencedColumnName = "id")})
     private @Getter @Setter Set<Member> contacts;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner", fetch = FetchType.LAZY, orphanRemoval = true)
+    /**
+     * if orphanRemoval=true is specified, CascadeType.REMOVE is redundant. 
+     * <a href="http://www.objectdb.com/java/jpa/persistence/delete#Orphan_Removal_">see also.</a>
+     */
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner", fetch = FetchType.LAZY)
     private @Getter @Setter List<UserStore> userstores;
     //It's very important to assign "cascade" attribute,without it the collection not to be saved.
     //重要:沒有指定"cascade"時，collection不會儲存
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner", fetch = FetchType.EAGER, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner", fetch = FetchType.EAGER)
 //    @OrderColumn(name = "phone")
     private @Getter @Setter Set<Phone> phones;
 
@@ -75,7 +79,7 @@ public class Member implements Serializable {
         this.id = id;
         this.name = name;
     }
-    
+
     @Override
     public String toString() {
         return String.format("%s[%s] is %s", name, id, userType);

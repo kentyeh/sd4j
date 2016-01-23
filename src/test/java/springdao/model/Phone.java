@@ -28,7 +28,7 @@ public class Phone implements Serializable {
     private static final long serialVersionUID = 470086049496896194L;
     @Id
     private @Getter @Setter String phone;
-    @ManyToOne
+    @ManyToOne(targetEntity = Member.class)
     @JoinColumn(name = "id", referencedColumnName = "id")
     private @Getter @Setter Member owner;
 }

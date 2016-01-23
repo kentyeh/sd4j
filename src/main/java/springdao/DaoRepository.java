@@ -24,6 +24,8 @@ public interface DaoRepository<E> {
      * build a instance of &lt;E&gt;.
      *
      * @return instance of {@link #getClazz() getClazz()}
+     * @throws java.lang.InstantiationException
+     * @throws java.lang.IllegalAccessException
      */
     public E instanate() throws InstantiationException, IllegalAccessException;
 
@@ -118,8 +120,6 @@ public interface DaoRepository<E> {
 
     public Collection<E> merge(Collection<E> entities);
 
-    public E merge(String entityName, E entity);
-
     /**
      * Save or update entity<br/>
      * 儲存或更新物件
@@ -128,8 +128,6 @@ public interface DaoRepository<E> {
      * @return merged entity/更新後的物件
      */
     public E saveOrUpdate(E entity);
-
-    public E saveOrUpdate(String entityName, E entity);
 
     /**
      * Save or update multipal entities<br/>
@@ -174,7 +172,13 @@ public interface DaoRepository<E> {
      */
     public void delete(Serializable primaryKey, String lockMode);
 
-    public void delete(Collection<Serializable> primaryKeys);
+    public void delete(Collection<? extends Serializable> primaryKeys);
+
+    public E remove(E entity);
+
+    public E remove(E entity, String lockMode);
+
+    public Collection<E> remove(Collection<E> entities);
 
     /**
      * Lock entity with lockMode.<br/>
@@ -187,16 +191,18 @@ public interface DaoRepository<E> {
     public E lock(E entity, String lockMode);
 
     /**
-     * Refresh the state of the instance from the database, overwriting changes made to the entity, if any.<br/>
+     * Refresh the state of the instance from the database, overwriting changes
+     * made to the entity, if any.<br/>
      * 重新讀取物件
      *
-     * @param entity 
+     * @param entity
      * @return entity instance/物件
      */
     public E refresh(E entity);
 
     /**
-     * Refresh the state of the instance from the database, overwriting changes made to the entity, if any.<br/>
+     * Refresh the state of the instance from the database, overwriting changes
+     * made to the entity, if any.<br/>
      * 以指定的層級鎖定重新讀取物件
      *
      * @param entity
@@ -285,46 +291,6 @@ public interface DaoRepository<E> {
     public List<E> findByCriteria(String qlCriteria, Map<String, ?> parameters);
 
     /**
-     * Query by joined criteria by invoke
-     * {@link #findByJoinCriteria(String, String ,int ,int ) findByJoinCriteria(joins, criteria, 0, 0)}.<br/>
-     * 條件查詢<br/>
-     * 會叫用{@link #findByJoinCriteria(String, String ,int ,int ) findByJoinCriteria(joins, criteria, 0, 0)}
-     *
-     * @param joins joined syntax.語法
-     * @param qlCriteria QL 的查詢條件
-     * @return List of entities.物件集合
-     */
-    public List<E> findByJoinCriteria(String joins, String qlCriteria);
-
-    /**
-     * Query by joined criteria.<br/>
-     * Be care of not cofusing with
-     * {@link #findByJoinCriteria(String, String, int , int , Object... ) findByJoinCriteria(String joins, String criteria, int startPageNo, int pageSize, Object... values)}.<br/>
-     * QL statement will be &quot;select &quot; +
-     * {@link #getAliasName() getAliasName()} + &quot; from &quot; +
-     * {@link #getEntityName() getEntityName()} + &quot; as &quot; +
-     * {@link #getAliasName() getAliasName()} +&quot;&nbsp;&quot;+ joins
-     * +&quot;&nbsp;&quot;+criteria<br/>
-     * If values starts with int, int, change values as new
-     * Object[]{param1param2…}<br/>
-     * 條件查詢所有資料，須小心當values前兩個參數型態為int時，會與另一個函式
-     * {@link #findByJoinCriteria(String, String, int , int , Object... ) findByJoinCriteria(String joins, String criteria, int startPageNo, int pageSize, Object... values)}產生混淆，為避免混淆時，vlaues參數必須改為
-     * new Object[]{參數1,參數2…}<br/>
-     * 實際查詢時QL會組成 &quot;select &quot; + {@link #getAliasName() getAliasName()} +
-     * &quot; from &quot; + {@link #getEntityName() getEntityName()} + &quot; as
-     * &quot; + {@link #getAliasName() getAliasName()} +&quot;&nbsp;&quot;+
-     * joins +&quot;&nbsp;&quot;+criteria
-     *
-     * @param joins joined syntax.語法
-     * @param qlCriteria QL parameter(using ? mark) 的查詢條件(參數要用 ? )
-     * @param parameters paraemters(with ? mark). 參數(順序必須時應QL內的 ?)
-     * @return List of entities.物件集合
-     */
-    public List<E> findByJoinCriteria(String joins, String qlCriteria, Object... parameters);
-
-    public List<E> findByJoinCriteria(String joins, String qlCriteria, Map<String, ?> parameters);
-
-    /**
      * Query by criteria.<br/>
      * QL statement will be &quot;from &quot; +
      * {@link #getEntityName() getEntityName()} + &quot; as &quot; +
@@ -344,30 +310,6 @@ public interface DaoRepository<E> {
     public List<E> findByCriteria(String qlCriteria, int startPageNo, int pageSize, Map<String, ?> parameters);
 
     /**
-     * Query by joined criteria.<br/>
-     * QL statement will be &quot;select &quot; +
-     * {@link #getAliasName() getAliasName()} + &quot; from &quot; +
-     * {@link #getEntityName() getEntityName()} + &quot; as &quot; +
-     * {@link #getAliasName() getAliasName()} +&quot;&nbsp;&quot;+ joins
-     * +&quot;&nbsp;&quot;+criteria<br/>
-     * 條件查詢所有資料<br/>
-     * 實際查詢時QL會組成 &quot;select &quot; + {@link #getAliasName() getAliasName()} +
-     * &quot; from &quot; + {@link #getEntityName() getEntityName()} + &quot; as
-     * &quot; + {@link #getAliasName() getAliasName()} +&quot;&nbsp;&quot;+
-     * joins +&quot;&nbsp;&quot;+criteria
-     *
-     * @param joins joined syntax.語法
-     * @param qlCriteria QL (? mark means parameter).的查詢條件(參數要用 ? )
-     * @param startPageNo start page no.起始頁數
-     * @param pageSize page size.每頁筆數
-     * @param parameters parameters of QL(follow by sequence.) .參數(順序必須時應QL內的 ?)
-     * @return List of entities.物件集合
-     */
-    public List<E> findByJoinCriteria(String joins, String qlCriteria, int startPageNo, int pageSize, Object... parameters);
-
-    public List<E> findByJoinCriteria(String joins, String qlCriteria, int startPageNo, int pageSize, Map<String, ?> parameters);
-
-    /**
      * Query by criteria.<br/>
      * QL statement will be &quot;from &quot; +
      * {@link #getEntityName() getEntityName()} + &quot; as &quot; +
@@ -382,22 +324,6 @@ public interface DaoRepository<E> {
      * @return List of entities.物件集合
      */
     public List<E> findByCriteria(String qlCriteria, int startPageNo, int pageSize);
-
-    /**
-     * Query by joined criteria.<br/>
-     * 條件查詢<br/>
-     * 實際查詢時QL會組成 &quot;select &quot; + {@link #getAliasName() getAliasName()} +
-     * &quot; from &quot; + {@link #getEntityName() getEntityName()} + &quot; as
-     * &quot; + {@link #getAliasName() getAliasName()} +&quot;&nbsp;&quot;+
-     * joins +&quot;&nbsp;&quot;+criteria
-     *
-     * @param joins joined syntax 語法
-     * @param qlCriteria QL 的查詢條件
-     * @param startPageNo start page no.起始頁數
-     * @param pageSize page size.每頁筆數
-     * @return List of entities.物件集合
-     */
-    public List<E> findByJoinCriteria(String joins, String qlCriteria, int startPageNo, int pageSize);
 
     public List<E> findByNamedQuery(String name);
 

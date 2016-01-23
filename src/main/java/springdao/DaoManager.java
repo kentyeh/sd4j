@@ -29,6 +29,15 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface DaoManager {
 
+    public static String LOCK_READ = "READ";
+    public static String LOCK_WRITE = "WRITE";
+    public static String LOCK_OPTIMISTIC = "OPTIMISTIC";
+    public static String LOCK_OPTIMISTIC_FORCE_INCREMENT = "OPTIMISTIC_FORCE_INCREMENT";
+    public static String LOCK_PESSIMISTIC_READ = "PESSIMISTIC_READ";
+    public static String LOCK_PESSIMISTIC_WRITE = "PESSIMISTIC_WRITE";
+    public static String LOCK_PESSIMISTIC_FORCE_INCREMENT = "PESSIMISTIC_FORCE_INCREMENT";
+    public static String LOCK_NONE = "NONE";
+
     /**
      * Class assoicated with {@link RepositoryManager}.<br/>
      * {@link RepositoryManager} 相關的一般化類別

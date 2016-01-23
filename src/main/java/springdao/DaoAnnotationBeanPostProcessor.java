@@ -10,7 +10,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
@@ -20,7 +19,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.Ordered;
-import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
@@ -32,7 +30,7 @@ import springdao.support.SimpleSpringDao;
  * @author Kent Yeh
  */
 public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter implements Ordered,
-        ApplicationContextAware, InitializingBean {
+        ApplicationContextAware {
 
     private static final Logger log = LogManager.getLogger(DaoAnnotationBeanPostProcessor.class);
     private ApplicationContext context;
@@ -50,11 +48,6 @@ public class DaoAnnotationBeanPostProcessor extends InstantiationAwareBeanPostPr
         if (applicationContext instanceof ConfigurableApplicationContext) {
             regContext = (ConfigurableApplicationContext) applicationContext;
         }
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        assert context.getBean(JpaTransactionManager.class) != null : "No JpaTransactionManager bean found.";
     }
 
     public <T> T getBean(String name, Class<T> requiredType) {
