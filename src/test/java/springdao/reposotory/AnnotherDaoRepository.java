@@ -552,11 +552,6 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
-    public <T> T findUniqueByQL(Class<T> clazz, String QL) {
-        return findUniqueByQL(QL);
-    }
-
-    @Override
     public <T> T findUniqueByQL(String QL, Object... parameters) {
         try {
             Query query = entityManager.createQuery(QL);
@@ -570,11 +565,6 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
         } catch (RuntimeException e) {
             throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
         }
-    }
-
-    @Override
-    public <T> T findUniqueByQL(Class<T> clazz, String QL, Object... parameters) {
-        return findUniqueByQL(QL, parameters);
     }
 
     @Override
@@ -592,12 +582,7 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
             throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
         }
     }
-
-    @Override
-    public <T> T findUniqueByQL(Class<T> clazz, String QL, Map<String, ?> parameters) {
-        return findUniqueByQL(QL, parameters);
-    }
-
+    
     @Override
     public <T> List<T> findListByQL(String QL) {
         try {
@@ -607,11 +592,6 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
         } catch (RuntimeException e) {
             throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
         }
-    }
-
-    @Override
-    public <T> List<T> findListByQL(Class<T> clazz, String QL) {
-        return findListByQL(QL);
     }
 
     @Override
@@ -629,12 +609,7 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
             throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
         }
     }
-
-    @Override
-    public <T> List<T> findListByQL(Class<T> clazz, String QL, Object... parameters) {
-        return findListByQL(QL, parameters);
-    }
-
+    
     @Override
     public <T> List<T> findListByQL(String QL, Map<String, ?> parameters) {
         try {
@@ -650,12 +625,7 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
             throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
         }
     }
-
-    @Override
-    public <T> List<T> findListByQL(Class<T> clazz, String QL, Map<String, ?> parameters) {
-        return findListByQL(QL, parameters);
-    }
-
+    
     @Override
     public List<Member> findByNamedQuery(String name) {
         return findList(entityManager.createNamedQuery(name, getClazz()));
@@ -698,10 +668,10 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
         }
     }
 
-    @Override
-    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name) {
-        return findListByNamedQuery(name);
-    }
+//    @Override
+//    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name) {
+//        return findListByNamedQuery(name);
+//    }
 
     @Override
     public <T> List<T> findListByNamedQuery(String name, Map<String, ?> parameters) {
@@ -719,15 +689,15 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
         }
     }
 
-    @Override
-    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Object... parameters) {
-        return findListByNamedQuery(name, parameters);
-    }
-
-    @Override
-    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Map<String, ?> parameters) {
-        return findListByNamedQuery(name, parameters);
-    }
+//    @Override
+//    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Object... parameters) {
+//        return findListByNamedQuery(name, parameters);
+//    }
+//
+//    @Override
+//    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Map<String, ?> parameters) {
+//        return findListByNamedQuery(name, parameters);
+//    }
 
     @Override
     public Member initLazyCollection(Member entity, final String collectionFieldName) {

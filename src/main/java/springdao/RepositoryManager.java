@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 封裝{@link DaoRepository}的功能，只是為了交易控制.
  *
  * @author Kent Yeh
+ * @param <E>
  */
 @Transactional(readOnly = true)
 public class RepositoryManager<E> {
@@ -135,16 +136,6 @@ public class RepositoryManager<E> {
         return dao.remove(entities);
     }
 
-    @Deprecated
-    public E refresh(E entity) {
-        return dao == null ? null : dao.refresh(entity);
-    }
-
-    @Deprecated
-    public E refresh(E entity, String lockMode) {
-        return dao == null ? null : dao.refresh(entity, lockMode);
-    }
-
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public int bulkUpdate(String QL) {
         return dao == null ? null : dao.bulkUpdate(QL);
@@ -192,7 +183,15 @@ public class RepositoryManager<E> {
         return dao == null ? null : dao.findByCriteria(qlCriteria, parameters);
     }
 
+    public List<E> findByCriteria(String qlCriteria, Map<String, ?> parameters) {
+        return dao == null ? null : dao.findByCriteria(qlCriteria, parameters);
+    }
+
     public List<E> findByCriteria(String qlCriteria, int startPageNo, int pageSize, Object... parameters) {
+        return dao == null ? null : dao.findByCriteria(qlCriteria, startPageNo, pageSize, parameters);
+    }
+
+    public List<E> findByCriteria(String qlCriteria, int startPageNo, int pageSize, Map<String, ?> parameters) {
         return dao == null ? null : dao.findByCriteria(qlCriteria, startPageNo, pageSize, parameters);
     }
 
@@ -230,6 +229,10 @@ public class RepositoryManager<E> {
         return dao == null ? null : dao.findBySQLQuery(sql, parameters);
     }
 
+    public List<E> findBySQLQuery(String sql, Map<String, ?> parameters) {
+        return dao == null ? null : dao.findBySQLQuery(sql, parameters);
+    }
+
     public List<E> findBySQLQuery(String sql, String entityAlias) {
         return dao == null ? null : dao.findBySQLQuery(sql, entityAlias);
     }
@@ -260,7 +263,18 @@ public class RepositoryManager<E> {
 
     public <T> T findUniqueByQL(Class<T> clazz, String QL, Object... parameters) {
         return findUniqueByQL(QL, parameters);
+    }
 
+    public <T> T findUniqueByQL(String QL, Map<String, ?> parameters) {
+        if (dao == null) {
+            return null;
+        } else {
+            return dao.findUniqueByQL(QL, parameters);
+        }
+    }
+
+    public <T> T findUniqueByQL(Class<T> clazz, String QL, Map<String, ?> parameters) {
+        return findUniqueByQL(QL, parameters);
     }
 
     public <T> List<T> findListByQL(String QL) {
@@ -281,10 +295,21 @@ public class RepositoryManager<E> {
         } else {
             return dao.findListByQL(QL, parameters);
         }
-
     }
 
     public <T> List<T> findListByQL(Class<T> clazz, String QL, Object... parameters) {
+        return findListByQL(QL, parameters);
+    }
+
+    public <T> List<T> findListByQL(String QL, Map<String, ?> parameters) {
+        if (dao == null) {
+            return null;
+        } else {
+            return dao.findListByQL(QL, parameters);
+        }
+    }
+
+    public <T> List<T> findListByQL(Class<T> clazz, String QL, Map<String, ?> parameters) {
         return findListByQL(QL, parameters);
     }
 

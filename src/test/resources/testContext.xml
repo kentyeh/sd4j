@@ -18,7 +18,7 @@
     <!--define applcaiton properties-->
     <util:map id="appProperies" map-class="java.util.HashMap" key-type="java.lang.String" value-type="java.lang.String">
         <entry key="jdbc.driverClassName" value="org.h2.Driver" />
-        <entry key="jdbc.url" value="jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE;TRACE_LEVEL_SYSTEM_OUT=1;TRACE_LEVEL_FILE=4" />
+        <entry key="jdbc.url" value="jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DB_CLOSE_ON_EXIT=FALSE;TRACE_LEVEL_SYSTEM_OUT=1;TRACE_LEVEL_FILE=4" />
         <entry key="jdbc.username" value="sa" />
         <entry key="jdbc.password" value="" />
         <entry key="jdbc.initialSize" value="2" />
@@ -59,7 +59,7 @@
         <prop key="hibernate.cache.use_query_cache">true</prop>
         <prop key="hibernate.cache.use_second_level_cache">true</prop>
         <prop key="hibernate.bytecode.use_reflection_optimizer">true</prop>
-        <prop key="hibernate.bytecode.provider">cglib</prop>
+        <prop key="hibernate.bytecode.provider">javassist</prop>
         <prop key="hibernate.query.substitutions">true 'Y', false 'N'</prop>
         <!--prop key="hibernate.hbm2ddl.auto">create</prop-->
     </util:properties>

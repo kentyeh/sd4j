@@ -1,7 +1,12 @@
+CREATE TABLE supervisor(
+  account    VARCHAR(15) primary key,
+  password   varchar(20) not null
+);
+INSERT INTO supervisor(account,password) values('kentyeh','password');
 CREATE TABLE member(
-  id             IDENTITY primary key,
-  name      VARCHAR(20) not null unique,
-  userType VARCHAR(1) not null,
+  id         IDENTITY primary key,
+  name       VARCHAR(20) not null unique,
+  userType   VARCHAR(1) not null,
   constraint member_ck1 CHECK userType in ('C','V','W')
 );
 INSERT INTO member(name,userType) values('Jose','C');
@@ -9,10 +14,13 @@ INSERT INTO member(name,userType) values('RooBeck','C');
 INSERT INTO member(name,userType) values('Kent Yeh','V');
 INSERT INTO member(name,userType) values('WareHouse','W');
 CREATE TABLE phone(
-  id            BIGINT,
-  phone    varchar(15) primary key,
-  constraint phone_fk1 FOREIGN KEY(id) REFERENCES member(id) ON UPDATE CASCADE ON DELETE SET NULL
+  id        IDENTITY primary key,
+  uid       BIGINT,
+  phone     varchar(15) not null,
+  constraint phone_fk1 FOREIGN KEY(uid) REFERENCES member(id) ON UPDATE CASCADE ON DELETE SET NULL
 );
+INSERT INTO phone(uid,phone) values(1,'7777777');
+INSERT INTO phone(uid,phone) values(2,'8888888');
 CREATE TABLE contactbook(
   oid          BIGINT , /*Owner ID*/
   cid          BIGINT,  /*Contact ID*/

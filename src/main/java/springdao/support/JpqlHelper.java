@@ -21,6 +21,10 @@ public class JpqlHelper {
     public static JpqlHelper get() {
         return new JpqlHelper();
     }
+    
+    public static String $q(String s) {
+        return "'" + s + "'";
+    }
 
     public JpqlHelper() {
     }

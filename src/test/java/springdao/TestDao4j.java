@@ -8,7 +8,9 @@ import springdao.reposotory.AnnotherDaoRepository;
 import springdao.reposotory.AnnotatedRepositoryManagerExt;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.test.context.ContextConfiguration;
@@ -29,7 +31,10 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import springdao.model.Admin;
 import springdao.reposotory.CustomManager;
+import springdao.support.DaoPropertyEditor;
+import springdao.support.LongDaoPropertyEditor;
 
 /**
  *
@@ -37,7 +42,7 @@ import springdao.reposotory.CustomManager;
  */
 @ContextConfiguration("classpath:testContext.xml")
 @Log4j2
-public class TestDao4j extends AbstractTestNGSpringContextTests {
+public class TestDao4j extends AbstractTestNGSpringContextTests{
 
     @Dao(value = Member.class, name = "annotherDao")
     private AnnotherDaoRepository anotherDao;
@@ -68,8 +73,13 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
     private RepositoryManager<Phone> phoneManager;
     @DaoManager
     private CustomManager<Member> mmC;
+    @DaoManager
+    private RepositoryManager<Admin> adminManager;
     List<Member> lazys = new ArrayList<>();
     private final AtomicInteger cnt = new AtomicInteger(0);
+    
+    private DaoPropertyEditor adminConverter;
+    private LongDaoPropertyEditor memberConverter;
 
     @Dao(value = Member.class, name = "annotherDao2")
     public void setAnotherDao2(AnnotherDaoRepository anotherDao2) {
@@ -112,6 +122,9 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
         mms.add(mmC);
         mma = new RepositoryManager[mms.size()];
         mma = mms.toArray(mma);
+        
+        adminConverter = new DaoPropertyEditor(adminManager);
+        memberConverter = new LongDaoPropertyEditor(mm3);
     }
 
     @AfterClass
@@ -160,9 +173,12 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
         assertThat("bulkUpdate failed.", 4, is(
                 mgr.bulkUpdate(JpqlHelper.get().update(mgr.$ea()).set().eq(mgr.$a("userType"), "'V'")
                         .where(mgr.$a("name")).like().quot("x%").ql())));
+        assertThat("bulkUpdate failed.", 4, is(
+                mgr.bulkUpdate(JpqlHelper.get().update(mgr.$ea()).set().eq(mgr.$a("userType"), "'C'")
+                        .where(mgr.$a("name")).like().$("?1").ql(), "x%")));
         List<String> qls = new ArrayList<>();
         qls.add(JpqlHelper.get().update(mgr.$ea()).set().eq(mgr.$a("userType"), "'V'")
-                        .where(mgr.$a("name")).like().quot("x%").ql());
+                .where(mgr.$a("name")).like().quot("x%").ql());
         assertThat("bulkUpdate failed.", 4, is(
                 mgr.bulkUpdate(qls).get(0)));
     }
@@ -177,7 +193,7 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
         member = mgr.findFirstByCriteria(JpqlHelper.get().where("name= ?1").ql(), "xC");
         assertThat("Can't find member['xC']", member, is(notNullValue()));
         mgr.delete(member.getId());
-        
+
         member = mgr.findFirstByCriteria(JpqlHelper.get().where("name= ?1").ql(), "xB");
         assertThat("Can't find member['xB']", member, is(notNullValue()));
         List<Long> ids = new ArrayList<>();
@@ -192,7 +208,9 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnMethods = "testNew")
     public void checkNew() {
-        assertThat("Insert new member faild", mmB.findByCriteria(JpqlHelper.get().where("name like ?1").ql(), "testNew%").size(), is(greaterThanOrEqualTo(mms.size())));
+        Map<String, String> map = new HashMap<>(1);
+        map.put("name", "testNew%");
+        assertThat("Insert new member faild", mmB.findByCriteria(JpqlHelper.get().where("name like :name").ql(), map).size(), is(greaterThanOrEqualTo(mms.size())));
         cnt.set(0);
     }
 
@@ -204,6 +222,22 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
             assertThat("select memberm failed", member, is(notNullValue()));
             lazys.add(member);
         }
+    }
+
+    @Test(dependsOnMethods = "checkNew")
+    public void testNativeSelect() {
+        RepositoryManager<Member> mgr = mms.get(2);
+        assertThat("No one has friend.",
+                mgr.findBySQLQuery("SELECT * FROM member WHERE EXISTS(SELECT 1 FROM contactbook WHERE contactbook.oid=member.id)"),
+                hasSize(greaterThan(0)));
+        assertThat("Insert new member faild",
+                mgr.findBySQLQuery("SELECT * FROM member WHERE name like ?1", "testNew%"),
+                hasSize(greaterThan(0)));
+        Map<String, String> map = new HashMap<>(1);
+        map.put("name", "testNew%");
+        assertThat("Insert new member faild",
+                mgr.findBySQLQuery("SELECT * FROM member WHERE name like :name", map),
+                hasSize(greaterThan(0)));
     }
 
     @Test(dependsOnMethods = "testSelect")
@@ -257,7 +291,9 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
 
     @Test(dependsOnMethods = "testModify")
     public void checkModify() {
-        assertThat("modify member faild", mmB.findByCriteria(JpqlHelper.get().where("name like 'testModify%'").ql()).size(), is(greaterThanOrEqualTo(mms.size())));
+        Map<String, String> map = new HashMap<>(1);
+        map.put("name", "testModify%");
+        assertThat("modify member faild", mmB.findByCriteria(JpqlHelper.get().where("name like :name").ql(), 1, mms.size(), map).size(), is(greaterThanOrEqualTo(mms.size())));
         testSelect();
         cnt.set(0);
     }
@@ -298,16 +334,22 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
     }
 
     @Test
-    public void testOrphanRemove() throws InstantiationException, IllegalAccessException {
+    public void testOrphanRemove() {
         String name = "Newbie";
         for (RepositoryManager<Member> m : mms) {
-            Member newbie = m.instanate();
+            Member newbie = new Member();
             newbie.setName(name);
             if (newbie.getPhones() == null) {
                 newbie.setPhones(new HashSet<Phone>());
             }
-            newbie.getPhones().add(new Phone("123456789", newbie));
-            newbie.getPhones().add(new Phone("098765432", newbie));
+            Phone p1 = new Phone();
+            p1.setOwner(newbie);
+            p1.setPhone("123456789");
+            newbie.getPhones().add(p1);
+            Phone p2 = new Phone();
+            p2.setOwner(newbie);
+            p2.setPhone("098765432");
+            newbie.getPhones().add(p2);
             m.save(newbie);
             Member member = m.findFirstByCriteria(JpqlHelper.get().where("name = ?1").ql(), name);
             assertThat("Ophan insert failed", member, is(notNullValue()));
@@ -319,18 +361,70 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
 
     @Test
     public void testNameQuery() {
+        int i = 0;
+        Map<String, String> map = new HashMap<>(1);
+        map.put("name", "%os%");
         for (RepositoryManager<Member> m : mms) {
-            List<Member> members = m.findByNamedQuery("Member.findByName", "%os%");
-            assertThat("Can't find by named query.", members.size(), is(greaterThan(0)));
-            members = m.findByNamedQuery("Member.findNativeByName", "%os%");
+            int r = i++ % 7;
+            List<Member> members = null;
+            switch (r) {
+                case 0:
+                    members = m.findByNamedQuery("Member.findAll");
+                    break;
+                case 1:
+                    members = m.findByNamedQuery("Member.findByName1", "%os%");
+                    break;
+                case 2:
+                    members = m.findByNamedQuery("Member.findNativeByName2", map);
+                    break;
+                case 3:
+                    members = m.findByNamedQuery("Member.findNativeAll");
+                    break;
+                case 4:
+                    members = m.findByNamedQuery("Member.findNativeByName1", "%os%");
+                    break;
+                case 5:
+                    members = m.findByNamedQuery("Member.findNativeByName2", map);
+                    break;
+                case 6:
+                    members = m.findListByNamedQuery("Member.findMappingAll");
+                    break;
+            }
             assertThat("Can't find by named query.", members.size(), is(greaterThan(0)));
         }
     }
 
+    @Test
+    public void testMemberFindPhone() {
+        Map<String, Long> map = new HashMap<>(1);
+        map.put("phone", 8888888l);
+        RepositoryManager<Member> mgr = mms.get(2);
+        assertThat("Can't find phones from memberManager",
+                mgr.findListByNamedQuery(Phone.class, "Phone.findNativeAll"), hasSize(greaterThanOrEqualTo(2)));
+        log.debug("***************Phone.findNativeByNumber1.size()={}",mgr.findListByNamedQuery(Phone.class, "Phone.findNativeByNumber1", "7777777 ").size());
+        assertThat("Can't find phones from memberManager  by postition",
+                mgr.findListByNamedQuery(Phone.class, "Phone.findNativeByNumber1", 7777777l), hasSize(greaterThanOrEqualTo(1)));
+        assertThat("Can't find phones from memberManager  by postition",
+                mgr.findListByNamedQuery(Phone.class, "Phone.findNativeByNumber2", map), hasSize(greaterThanOrEqualTo(1)));
+    }
+
+    @Test
+    public void testConverter(){
+        adminConverter.setAsText("kentyeh");
+        assertThat("Can't convert string to Admin object.",adminConverter.getAsText(),is("Admin(kentyeh)"));
+        memberConverter.setAsText("1");
+        assertThat("Can't convert string to Phone object.",memberConverter.getAsText(),is("Jose[1] is Customer"));
+    }
     @Test(dependsOnMethods = "checkNew")
     public void testFindUniqueByQL() {
+        int i = 0;
+        Map<String, Integer> map = new HashMap<>(1);
+        map.put("param", 2);
         for (RepositoryManager<Member> m : mms) {
-            Long res = m.findUniqueByQL(Long.class, JpqlHelper.get().select().count(m.$a()).from(m.$ea()).ql());
+            int r = i++ % 3;
+            Long res = r == 0 ? m.findUniqueByQL(Long.class, JpqlHelper.get().select().count(m.$a()).from(m.$ea()).ql())
+                    : r == 1 ? m.findUniqueByQL(Long.class, JpqlHelper.get().select().count(m.$a()).from(m.$ea()).where("1= ?1").ql(), 1)
+                            : m.findUniqueByQL(Long.class, JpqlHelper.get().select().count(m.$a()).from(m.$ea()).where("2= :param").ql(), map);
             assertThat("Users' count must grater zero", res.intValue(), is(greaterThan(0)));
         }
     }
@@ -338,15 +432,21 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
     @Test(dependsOnMethods = "checkNew")
     public void testFindUniqueByQL2() {
         for (RepositoryManager<Member> m : mms) {
-            Object[] res = m.findUniqueByQL(null, JpqlHelper.get().select().count(m.$a()).cMax("name").from(m.$ea()).ql());
+            Object[] res = m.findUniqueByQL(JpqlHelper.get().select().count(m.$a()).cMax("name").from(m.$ea()).ql());
             assertThat("Multiple field query wrong", res.length, is(equalTo(2)));
         }
     }
 
     @Test(dependsOnMethods = "checkNew")
     public void testFindListByQL() {
+        Map<String, Integer> map = new HashMap<>(1);
+        map.put("param", 2);
+        int i = 0;
         for (RepositoryManager<Member> m : mms) {
-            List<Long> res = m.findListByQL(Long.class, JpqlHelper.get().select(m.$a("id")).from(m.$ea()).ql());
+            int r = i++ % 3;
+            List<Long> res = r == 0 ? m.findListByQL(Long.class, JpqlHelper.get().select(m.$a("id")).from(m.$ea()).ql())
+                    : r == 1 ? m.findListByQL(Long.class, JpqlHelper.get().select(m.$a("id")).from(m.$ea()).where("1= ?1").ql(), 1)
+                            : m.findListByQL(Long.class, JpqlHelper.get().select(m.$a("id")).from(m.$ea()).where("2= :param").ql(), map);
             assertThat("Free QL query wrong", res.size(), is(greaterThan(0)));
             assertThat("Free QL query wrong", res.get(0), is(greaterThanOrEqualTo(0l)));
         }

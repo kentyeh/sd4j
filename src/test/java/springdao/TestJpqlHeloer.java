@@ -10,6 +10,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.Test;
 import springdao.support.JpqlHelper;
+import static springdao.support.JpqlHelper.$q;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -48,7 +49,7 @@ public class TestJpqlHeloer extends AbstractTestNGSpringContextTests {
     }
 
     @Test
-    public void test$90(String s) {
+    public void test$90() {
         assertThat($().$90(hw).ql(), is("(" + hw + ")"));
     }
 
@@ -70,6 +71,12 @@ public class TestJpqlHeloer extends AbstractTestNGSpringContextTests {
     @Test
     public void testWhere() {
         assertThat($().selectDistinct().$($a + hw).from($ea).where("1=2").ql(), is("SELECT DISTINCT " + $a + hw + " FROM " + $ea+" WHERE 1=2"));
+    }
+    
+    @Test
+    public void testCase(){
+        assertThat($().select().$($a + hw).from($ea).where("1=").Case($ea+"field").whenThen($q(hw), "1").elseEnd("0").ql(), 
+                is("SELECT " + $a + hw + " FROM " + $ea+" WHERE 1= CASE "+$ea+"field WHEN "+$q(hw)+" THEN 1 ELSE 0 END"));
     }
 
 }

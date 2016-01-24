@@ -551,11 +551,6 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     }
 
     @Override
-    public <T> T findUniqueByQL(Class<T> clazz, String QL) {
-        return findUniqueByQL(QL);
-    }
-
-    @Override
     public <T> T findUniqueByQL(String QL, Object... parameters) {
         try {
             Query query = em.createQuery(QL);
@@ -569,11 +564,6 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         } catch (RuntimeException e) {
             throw convertException(e);
         }
-    }
-
-    @Override
-    public <T> T findUniqueByQL(Class<T> clazz, String QL, Object... parameters) {
-        return findUniqueByQL(QL, parameters);
     }
 
     @Override
@@ -593,14 +583,8 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     }
 
     @Override
-    public <T> T findUniqueByQL(Class<T> clazz, String QL, Map<String, ?> parameters) {
-        return findUniqueByQL(QL, parameters);
-    }
-
-    @Override
     public <T> List<T> findListByQL(String QL) {
         try {
-            assert em != null : "*************** em is empty******************";
             Query query = em.createQuery(QL);
             EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
             return query.getResultList();
@@ -608,11 +592,6 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             log.error(e.getMessage(), e);
             throw convertException(e);
         }
-    }
-
-    @Override
-    public <T> List<T> findListByQL(Class<T> clazz, String QL) {
-        return findListByQL(QL);
     }
 
     @Override
@@ -632,11 +611,6 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     }
 
     @Override
-    public <T> List<T> findListByQL(Class<T> clazz, String QL, Object... parameters) {
-        return findListByQL(QL, parameters);
-    }
-
-    @Override
     public <T> List<T> findListByQL(String QL, Map<String, ?> parameters) {
         try {
             Query query = em.createQuery(QL);
@@ -650,11 +624,6 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         } catch (RuntimeException e) {
             throw convertException(e);
         }
-    }
-
-    @Override
-    public <T> List<T> findListByQL(Class<T> clazz, String QL, Map<String, ?> parameters) {
-        return findListByQL(QL, parameters);
     }
 
     @Override
@@ -684,11 +653,6 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     }
 
     @Override
-    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name) {
-        return findListByNamedQuery(name);
-    }
-
-    @Override
     public <T> List<T> findListByNamedQuery(String name, Object... parameters) {
         try {
             Query query = em.createNamedQuery(name);
@@ -705,11 +669,6 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     }
 
     @Override
-    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Object... parameters) {
-        return findListByNamedQuery(name, parameters);
-    }
-
-    @Override
     public <T> List<T> findListByNamedQuery(String name, Map<String, ?> parameters) {
         try {
             Query query = em.createNamedQuery(name);
@@ -723,11 +682,6 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         } catch (RuntimeException e) {
             throw convertException(e);
         }
-    }
-
-    @Override
-    public <T> List<T> findListByNamedQuery(Class<T> clazz, String name, Map<String, ?> parameters) {
-        return findListByNamedQuery(name, parameters);
     }
 
     @Override
