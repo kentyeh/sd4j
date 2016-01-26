@@ -1,0 +1,11 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite thread-count="5" configfailurepolicy="skip" verbose="0" name="SD4J Test Suit" skipfailedinvocationcounts="false" annotations="JDK">
+    <test verbose="1" name="Unit Test" junit="false">
+        <classes>
+            <!--
+            -->       
+            <class name="springdao.TestDao4j"/>
+            <class name="springdao.TestJpqlHeloer"/>
+        </classes>
+    </test>
+</suite> 

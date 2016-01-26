@@ -28,9 +28,9 @@ import springdao.support.AliasHelper;
 @Log4j2
 public class TestJpqlHeloer extends AbstractTestNGSpringContextTests {
 
-    private String hw = "Hello World!";
-    private String $a = AliasHelper.$a(TestJpqlHeloer.class) + ".";
-    private String $ea = AliasHelper.$ea(TestJpqlHeloer.class);
+    private final String hw = "Hello World!";
+    private final String $a = AliasHelper.$a(TestJpqlHeloer.class) + ".";
+    private final String $ea = AliasHelper.$ea(TestJpqlHeloer.class);
 
     private JpqlHelper $() {
         return new JpqlHelper();
@@ -84,33 +84,40 @@ public class TestJpqlHeloer extends AbstractTestNGSpringContextTests {
 
     @Test
     public void testCase2() {
-        assertThat($().select().Case().$("field").whenThen("1", "True").elseEnd("False")
+        assertThat($().select("F1").$c().sqrt().$90("F1")
+                .$c().Case().$("field").whenThen("1", "True").elseEnd("False")
                 .from($ea).where("field").between().$("1").and().$("10").ql(),
-                is("SELECT CASE field WHEN 1 THEN True ELSE False END FROM " + $ea + " WHERE field BETWEEN 1 AND 10"));
+                is("SELECT F1 , SQRT(F1) , CASE field WHEN 1 THEN True ELSE False END FROM " 
+                        + $ea + " WHERE field BETWEEN 1 AND 10"));
     }
 
     @Test
     public void testCase3() {
-        assertThat($().select().$("F1").cCase().$("field").whenThen("1", "True").elseEnd("False")
+        assertThat($().select().$("F1").cSqrt().$90("F1")
+                .cCase().$("field").whenThen("1", "True").elseEnd("False")
                 .from($ea).where("field").between("1","10").ql(),
-                is("SELECT F1 ,CASE field WHEN 1 THEN True ELSE False END FROM " + $ea+
+                is("SELECT F1 ,SQRT(F1) ,CASE field WHEN 1 THEN True ELSE False END FROM " + $ea+
                         " WHERE field BETWEEN 1 AND 10"));
     }
 
     @Test
     public void testCase4() {
-        assertThat($().select().$("F1").cCase("field").whenThen("1", "True").elseEnd("False")
+        assertThat($().select().$("F1").$c().sqrt("F1").$c().coalesce("F2", $q("VALUE")).$c().nullif("F3",$q("F3Val"))
+                .cCase("field").whenThen("1", "True").elseEnd("False")
                 .from($ea).where("F1").like().$($q("x%")).ql(),
-                is("SELECT F1 ,CASE field WHEN 1 THEN True ELSE False END FROM " + $ea+
+                is("SELECT F1 , SQRT(F1) , COALESCE(F2,'VALUE') , NULLIF(F3,'F3Val') "
+                        + ",CASE field WHEN 1 THEN True ELSE False END FROM " + $ea+
                         " WHERE F1 LIKE 'x%'"));
     }
 
     @Test
     public void testCase5() {
-        assertThat($().select().$("F1").cCase("field").whenThen("1", "True").Else("False").end()
+        assertThat($().select().$("F1").cSqrt("F1").cCoalesce("F2", $q("VALUE")).cNullif("F3", $q("F3Val"))
+                .cCase("field").whenThen("1", "True").Else("False").end()
                 .from($ea).where().like("F1", $q("x%")).ql(),
-                is("SELECT F1 ,CASE field WHEN 1 THEN True ELSE False END FROM " + $ea
-                +" WHERE F1 LIKE 'x%'"));
+                is("SELECT F1 ,SQRT(F1) ,COALESCE(F2,'VALUE') ,NULLIF(F3,'F3Val') "
+                        + ",CASE field WHEN 1 THEN True ELSE False END FROM " + $ea
+                        + " WHERE F1 LIKE 'x%'"));
     }
 
     @Test
@@ -201,29 +208,39 @@ public class TestJpqlHeloer extends AbstractTestNGSpringContextTests {
                 is("SELECT Member FROM Member JOIN FETCH Member.phones WHERE Member.phones IS EMPTY"
                         + " OR '0987654321' MEMBER OF Member.phones"));
     }
+    
     @Test
     public void testAggreate() {
         assertThat($().select().$("F1").$c().count().$90("8").as("cnt").$c().abs().$90("F1").$c()
-                .avg().$90("F1").$c().avg("F2").$c().max().$90("F1").$c().min().$90("F1")
+                .avg().$90("F1").$c().avg("F2").$c().max().$90("F1").$c().min().$90("F1").$c().sum().$90("F1")
                 .from("Tab1").groupBy().$("F1").having().count().$90("8").$(">1").orderBy().$("1").asc().ql(),
-                is("SELECT F1 , COUNT(8) AS cnt , ABS(F1) , AVG(F1) , AVG(F2) , MAX(F1) , MIN(F1) FROM Tab1 "
+                is("SELECT F1 , COUNT(8) AS cnt , ABS(F1) , AVG(F1) , AVG(F2) , MAX(F1) , MIN(F1) , SUM(F1) FROM Tab1 "
                         + "GROUP BY F1 HAVING COUNT(8) >1 ORDER BY 1 ASC"));
     }
 
     @Test
     public void testAggreate2() {
-        assertThat($().select().$("F1").cCount().$90("8").as("cnt").cAbs().$90("F1")
-                .cAvg().$90("F1").cMax().$90("F1").cMin().$90("F1")
-                .from("Tab1").groupBy("F1").having().count().$90("8").$(">1").orderBy().$("1").asc().ql(),
-                is("SELECT F1 ,COUNT(8) AS cnt ,ABS(F1) ,AVG(F1) ,MAX(F1) ,MIN(F1) FROM Tab1 "
+        assertThat($().select().$("F1").$c().count("8").as("cnt").$c().countDistinct("F1").$c().abs().$90("F1").$c()
+                .avg().$90("F1").$c().avg("F2").$c().max("F1").$c().min("F1").$c().sum("F1")
+                .from("Tab1").groupBy().$("F1").having().count().$90("8").$(">1").orderBy().$("1").asc().ql(),
+                is("SELECT F1 , COUNT(8) AS cnt , COUNT(DISTINCT F1) , ABS(F1) , AVG(F1) , AVG(F2) , MAX(F1) , MIN(F1) , SUM(F1) FROM Tab1 "
                         + "GROUP BY F1 HAVING COUNT(8) >1 ORDER BY 1 ASC"));
+    }
+    
+    @Test
+    public void testAggreate3() {
+        assertThat($().select().$("F1").cCount().$90("8").as("cnt").cCountDistinct("F1").cAbs().$90("F1")
+                .cAvg().$90("F1").cMax().$90("F1").cMin().$90("F1").cSum().$90("F1")
+                .from("Tab1").groupBy("F1").having().count().$90("8").$(">1").orderBy().$("1").desc().ql(),
+                is("SELECT F1 ,COUNT(8) AS cnt ,COUNT(DISTINCT F1) ,ABS(F1) ,AVG(F1) ,MAX(F1) ,MIN(F1) ,SUM(F1) FROM Tab1 "
+                        + "GROUP BY F1 HAVING COUNT(8) >1 ORDER BY 1 DESC"));
     }
 
     @Test
-    public void testAggreate3() {
-        assertThat($().select("F1").cCount("8").as("cnt").cAbs("F1").cAvg("F1").cMax("F1").cMin("F1")
+    public void testAggreate4() {
+        assertThat($().select("F1").cCount("8").as("cnt").cAbs("F1").cAvg("F1").cMax("F1").cMin("F1").cSum("F1")
                 .from("Tab1").groupBy().$("F1").having("COUNT(8) >1").orderBy("1").asc().ql(),
-                is("SELECT F1 ,COUNT(8) AS cnt ,ABS(F1) ,AVG(F1) ,MAX(F1) ,MIN(F1)"
+                is("SELECT F1 ,COUNT(8) AS cnt ,ABS(F1) ,AVG(F1) ,MAX(F1) ,MIN(F1) ,SUM(F1)"
                         + " FROM Tab1 GROUP BY F1 HAVING COUNT(8) >1 ORDER BY 1 ASC"));
     }
 

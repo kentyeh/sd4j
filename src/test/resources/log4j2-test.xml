@@ -4,8 +4,8 @@
                 <Console name="console">
                         <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %highlight{%-5level} %class{1.}.%M(%L) - %highlight{%msg}%n%ex{full}%n" />
                 </Console>
-                <RollingRandomAccessFile name="sd4j-FastRollingFile" fileName="${sys:log.foder}/sd4j.log"
-                        filePattern="${sys:log.foder}/sd4j-%d{MM-dd-yyyy}-%i.log.gz">
+                <RollingRandomAccessFile name="sd4j-FastRollingFile" fileName="${project.build.directory}/sd4j.log"
+                        filePattern="${project.build.directory}/sd4j-%d{MM-dd-yyyy}-%i.log.gz">
                         <PatternLayout>
                                 <pattern>%d %p %C{1.}.%M(%L) [%t] %m%n%ex{full}%n</pattern>
                         </PatternLayout>

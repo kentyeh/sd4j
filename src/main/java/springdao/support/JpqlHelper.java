@@ -140,6 +140,7 @@ public class JpqlHelper {
      * 加入一個<span style="color:blue">SELECT
      * DISTINCT</span>&nbsp;<span style="color:#FF8000">fields</span>字串
      *
+     * @param fields
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper selectDistinct(String fields) {
@@ -855,26 +856,6 @@ public class JpqlHelper {
     }
 
     /**
-     * append a string <span style="color:blue">COALESCE</span>.<br/>
-     * 加入一個<span style="color:blue">COALESCE</span>字串
-     *
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper coalesce() {
-        return $("COALESCE");
-    }
-
-    /**
-     * append a string <span style="color:blue">,COALESCE</span>.<br/>
-     * 加入一個<span style="color:blue">,COALESCE</span>字串
-     *
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper cCoalesce() {
-        return $(",COALESCE");
-    }
-
-    /**
      * append a string
      * <span style="color:blue">COALESCE</span>(<span style="color:#FF8000">field</span>&nbsp;,&nbsp;<span style="color:#FF8000">defaultValue</span>).<br/>
      * 加入一個<span style="color:blue">COALESCE</span>(<span style="color:#FF8000">field</span>&nbsp;,&nbsp;<span style="color:#FF8000">defaultValue</span>)字串
@@ -898,26 +879,6 @@ public class JpqlHelper {
      */
     public JpqlHelper cCoalesce(String field, String defaultValue) {
         return $(",COALESCE(" + field + "," + defaultValue + ")");
-    }
-
-    /**
-     * append a string <span style="color:blue">NULLIF</span>.<br/>
-     * 加入一個<span style="color:blue">NULLIF</span>字串
-     *
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper nullif() {
-        return $("NULLIF");
-    }
-
-    /**
-     * append a string <span style="color:blue">,NULLIF</span>.<br/>
-     * 加入一個<span style="color:blue">,NULLIF</span>字串
-     *
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper cNullif() {
-        return $(",NULLIF");
     }
 
     /**
@@ -1197,28 +1158,6 @@ public class JpqlHelper {
 
     /**
      * append a string
-     * <span style="color:blue">MOD</span>.<br/>
-     * 加入一個<span style="color:blue">MOD</span>字串
-     *
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper mod() {
-        return $("MOD");
-    }
-
-    /**
-     * append a string
-     * <span style="color:blue">,MOD</span>.<br/>
-     * 加入一個<span style="color:blue">,MOD</span>字串
-     *
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper cMod() {
-        return $(",MOD");
-    }
-
-    /**
-     * append a string
      * <span style="color:blue">MOD</span>(<span style="color:#FF8000">number</span>,<span style="color:#FF8000">divisor</span>).<br/>
      * 加入一個<span style="color:blue">MOD</span>(<span style="color:#FF8000">number</span>,<span style="color:#FF8000">divisor</span>)字串
      *
@@ -1383,28 +1322,6 @@ public class JpqlHelper {
 
     /**
      * append a string
-     * <span style="color:blue">CONCAT</span>.<br/>
-     * 加入一個<span style="color:blue">CONCAT</span>字串
-     *
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper concat() {
-        return $("CONCAT");
-    }
-
-    /**
-     * append a string
-     * <span style="color:blue">,CONCAT</span>.<br/>
-     * 加入一個<span style="color:blue">,CONCAT</span>字串
-     *
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper cConcat() {
-        return $(",CONCAT");
-    }
-
-    /**
-     * append a string
      * <span style="color:blue">CONCAT</span>(<span style="color:#FF8000">first</span>&nbsp;,&nbsp;
      * <span style="color:#FF8000">second</span>).<br/>
      * 加入一個<span style="color:blue">CONCAT</span>(<span style="color:#FF8000">first</span>&nbsp;,&nbsp;
@@ -1431,28 +1348,6 @@ public class JpqlHelper {
      */
     public JpqlHelper cConcat(String first, String second) {
         return $(",CONCAT(" + first + " , " + second + " )");
-    }
-
-    /**
-     * append a string
-     * <span style="color:blue">SUBSTRING</span>.<br/>
-     * 加入一個<span style="color:blue">SUBSTRING</span>字串
-     *
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper substring() {
-        return $("SUBSTRING");
-    }
-
-    /**
-     * append a string
-     * <span style="color:blue">,SUBSTRING</span>.<br/>
-     * 加入一個<span style="color:blue">,SUBSTRING</span>字串
-     *
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper cSubstring() {
-        return $(",SUBSTRING");
     }
 
     /**
@@ -1485,26 +1380,6 @@ public class JpqlHelper {
      */
     public JpqlHelper cSubstring(String field, int start, int end) {
         return $(",SUBSTRING(" + field + " , " + start + " , " + end + " )");
-    }
-
-    /**
-     * append a string <span style="color:blue">LOCATE</span>.<br/>
-     * 加入一個<span style="color:blue">LOCATE</span>字串
-     *
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper locate() {
-        return $("LOCATE");
-    }
-
-    /**
-     * append a string <span style="color:blue">,LOCATE</span>.<br/>
-     * 加入一個<span style="color:blue">,LOCATE</span>字串
-     *
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper cLocate() {
-        return $(",LOCATE");
     }
 
     /**
@@ -1807,26 +1682,6 @@ public class JpqlHelper {
     }
 
     /**
-     * append a string <span style="color:blue">CAST</span>.<br/>
-     * 加入一個<span style="color:blue">CAST</span>字串
-     *
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper cast() {
-        return $("CAST");
-    }
-
-    /**
-     * append a string <span style="color:blue">,CAST</span>.<br/>
-     * 加入一個<span style="color:blue">,CAST</span>字串
-     *
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper cCast() {
-        return $(",CAST");
-    }
-
-    /**
      * append a string
      * <span style="color:blue">CAST</span>(<span style="color:#FF8000">field</span>&nbsp;,&nbsp;<span style="color:#FF8000">typeValue</span>).<br/>
      * 加入一個<span style="color:blue">CAST</span>(<span style="color:#FF8000">field</span>&nbsp;,&nbsp;<span style="color:#FF8000">typeValue</span>)字串
@@ -1850,26 +1705,6 @@ public class JpqlHelper {
      */
     public JpqlHelper cCast(String field, String typeValue) {
         return $(",CAST(" + field + "," + typeValue + ")");
-    }
-
-    /**
-     * append a string <span style="color:blue">EXTRACT</span>.<br/>
-     * 加入一個<span style="color:blue">EXTRACT</span>字串
-     *
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper extract() {
-        return $("EXTRACT");
-    }
-
-    /**
-     * append a string <span style="color:blue">,EXTRACT</span>.<br/>
-     * 加入一個<span style="color:blue">,EXTRACT</span>字串
-     *
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper cExtract() {
-        return $(",EXTRACT");
     }
 
     /**
