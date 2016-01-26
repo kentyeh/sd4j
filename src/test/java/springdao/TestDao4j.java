@@ -231,8 +231,8 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
         List<String> qls = new ArrayList<>();
         qls.add(JpqlHelper.get().update(mgr.$ea()).set().eq(mgr.$a("userType"), "'V'")
                 .where(mgr.$a("name")).like().quot("x%").ql());
-        assertThat("bulkUpdate failed.", 5, is(
-                mgr.bulkUpdate(qls).get(0)));
+        assertThat("bulkUpdate failed.", mgr.bulkUpdate(qls).get(0), is(5));
+        assertThat("bulkUpdate failed.", mgr.bulkUpdate(qls.get(0)), is(5));
     }
 
     @Test(dependsOnMethods = "testColelction")

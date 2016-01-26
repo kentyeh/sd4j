@@ -73,7 +73,7 @@ public class TestJpqlHeloer extends AbstractTestNGSpringContextTests {
 
     @Test
     public void testWhere() {
-        assertThat($().selectDistinct().$($a + hw).from($ea).where("1=2").ql(), is("SELECT DISTINCT " + $a + hw + " FROM " + $ea + " WHERE 1=2"));
+        assertThat($().selectDistinct($a + hw).from($ea).where("1=2").ql(), is("SELECT DISTINCT " + $a + hw + " FROM " + $ea + " WHERE 1=2"));
     }
 
     @Test
@@ -204,10 +204,10 @@ public class TestJpqlHeloer extends AbstractTestNGSpringContextTests {
     @Test
     public void testAggreate() {
         assertThat($().select().$("F1").$c().count().$90("8").as("cnt").$c().abs().$90("F1").$c()
-                .avg().$90("F1").$c().max().$90("F1").$c().min().$90("F1")
+                .avg().$90("F1").$c().avg("F2").$c().max().$90("F1").$c().min().$90("F1")
                 .from("Tab1").groupBy().$("F1").having().count().$90("8").$(">1").orderBy().$("1").asc().ql(),
-                is("SELECT F1 , COUNT(8) AS cnt , ABS (F1) , AVG (F1) , MAX (F1) , MIN (F1) "
-                        + "FROM Tab1 GROUP BY F1 HAVING COUNT(8) >1 ORDER BY 1 ASC"));
+                is("SELECT F1 , COUNT(8) AS cnt , ABS(F1) , AVG(F1) , AVG(F2) , MAX(F1) , MIN(F1) FROM Tab1 "
+                        + "GROUP BY F1 HAVING COUNT(8) >1 ORDER BY 1 ASC"));
     }
 
     @Test
@@ -215,8 +215,8 @@ public class TestJpqlHeloer extends AbstractTestNGSpringContextTests {
         assertThat($().select().$("F1").cCount().$90("8").as("cnt").cAbs().$90("F1")
                 .cAvg().$90("F1").cMax().$90("F1").cMin().$90("F1")
                 .from("Tab1").groupBy("F1").having().count().$90("8").$(">1").orderBy().$("1").asc().ql(),
-                is("SELECT F1 ,COUNT(8) AS cnt ,ABS (F1) ,AVG (F1) ,MAX (F1) ,MIN (F1)"
-                        + " FROM Tab1 GROUP BY F1 HAVING COUNT(8) >1 ORDER BY 1 ASC"));
+                is("SELECT F1 ,COUNT(8) AS cnt ,ABS(F1) ,AVG(F1) ,MAX(F1) ,MIN(F1) FROM Tab1 "
+                        + "GROUP BY F1 HAVING COUNT(8) >1 ORDER BY 1 ASC"));
     }
 
     @Test

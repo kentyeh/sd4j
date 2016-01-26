@@ -21,7 +21,7 @@ public class JpqlHelper {
     public static JpqlHelper get() {
         return new JpqlHelper();
     }
-    
+
     public static String $q(String s) {
         return "'" + s + "'";
     }
@@ -83,12 +83,16 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper $90(String s) {
+        while (sb.length() > 0 && sb.charAt(sb.length() - 1) == ' ') {
+            sb.delete(sb.length() - 1, sb.length());
+        }
         sb.append("(").append(s).append(") ");
         return this;
     }
-    
+
     /**
-     * add &quot;<span style="background-color:yellow">&nbsp;</span>(..string..)&quot;
+     * add
+     * &quot;<span style="background-color:yellow">&nbsp;</span>(..string..)&quot;
      *
      * @param s
      * @return {@link JpqlHelper this}
@@ -242,7 +246,7 @@ public class JpqlHelper {
     public JpqlHelper when() {
         return $("WHEN");
     }
-    
+
     /**
      * append a string
      * <span style="color:blue">THEN</span>.<br/>
@@ -253,7 +257,6 @@ public class JpqlHelper {
     public JpqlHelper then() {
         return $("THEN");
     }
-
 
     /**
      * append a string
@@ -368,7 +371,7 @@ public class JpqlHelper {
     public JpqlHelper join(String other) {
         return $("JOIN " + other);
     }
-    
+
     /**
      * append a string <span style="color:blue">INNER JOIN</span>.<br/>
      * 加入一個<span style="color:blue">INNER JOIN</span>字串
@@ -705,7 +708,7 @@ public class JpqlHelper {
     public JpqlHelper memberOf() {
         return $("MEMBER OF");
     }
-    
+
     /**
      * append a string
      * <span style="color:#FF8000">left</span>&nbsp;<span style="color:blue">MEMBER&nbsp;OF</span>&nbsp;<span style="color:#FF8000">right</span>.<br/>
@@ -714,7 +717,7 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper memberOf(String left, String right) {
-        return $(left+" MEMBER OF "+right);
+        return $(left + " MEMBER OF " + right);
     }
 
     /**
@@ -760,102 +763,6 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper cAbs(String field) {
-        return $(",ABS(" + field + ")");
-    }
-
-    /**
-     * append a string
-     * <span style="color:blue">ABS</span>(<span style="color:#FF8000">field</span>).<br/>
-     * 加入一個<span style="color:blue">ABS</span>(<span style="color:#FF8000">field</span>)字串
-     *
-     * @param field
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper abs(double field) {
-        return $("ABS(" + field + ")");
-    }
-
-    /**
-     * append a string
-     * <span style="color:blue">,ABS</span>(<span style="color:#FF8000">field</span>).<br/>
-     * 加入一個<span style="color:blue">,ABS</span>(<span style="color:#FF8000">field</span>)字串
-     *
-     * @param field
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper cAbs(double field) {
-        return $(",ABS(" + field + ")");
-    }
-
-    /**
-     * append a string
-     * <span style="color:blue">ABS</span>(<span style="color:#FF8000">field</span>).<br/>
-     * 加入一個<span style="color:blue">ABS</span>(<span style="color:#FF8000">field</span>)字串
-     *
-     * @param field
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper abs(float field) {
-        return $("ABS(" + field + ")");
-    }
-
-    /**
-     * append a string
-     * <span style="color:blue">,ABS</span>(<span style="color:#FF8000">field</span>).<br/>
-     * 加入一個<span style="color:blue">,ABS</span>(<span style="color:#FF8000">field</span>)字串
-     *
-     * @param field
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper cAbs(float field) {
-        return $(",ABS(" + field + ")");
-    }
-
-    /**
-     * append a string
-     * <span style="color:blue">ABS</span>(<span style="color:#FF8000">field</span>).<br/>
-     * 加入一個<span style="color:blue">ABS</span>(<span style="color:#FF8000">field</span>)字串
-     *
-     * @param field
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper abs(int field) {
-        return $("ABS(" + field + ")");
-    }
-
-    /**
-     * append a string
-     * <span style="color:blue">,ABS</span>(<span style="color:#FF8000">field</span>).<br/>
-     * 加入一個<span style="color:blue">,ABS</span>(<span style="color:#FF8000">field</span>)字串
-     *
-     * @param field
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper cAbs(int field) {
-        return $(",ABS(" + field + ")");
-    }
-
-    /**
-     * append a string
-     * <span style="color:blue">ABS</span>(<span style="color:#FF8000">field</span>).<br/>
-     * 加入一個<span style="color:blue">ABS</span>(<span style="color:#FF8000">field</span>)字串
-     *
-     * @param field
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper abs(long field) {
-        return $("ABS(" + field + ")");
-    }
-
-    /**
-     * append a string
-     * <span style="color:blue">,ABS</span>(<span style="color:#FF8000">field</span>).<br/>
-     * 加入一個<span style="color:blue">,ABS</span>(<span style="color:#FF8000">field</span>)字串
-     *
-     * @param field
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper cAbs(long field) {
         return $(",ABS(" + field + ")");
     }
 
@@ -1850,7 +1757,7 @@ public class JpqlHelper {
     public JpqlHelper set() {
         return $("SET");
     }
-    
+
     /**
      * append a string
      * <span style="color:blue">SET</span>&nbsp;<span style="color:#FF8000">left</span><span style="color:blue">=</span><span style="color:#FF8000">right</span>.<br/>
@@ -1861,7 +1768,7 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper set(String left, String right) {
-        return $("SET "+left + " = " + right);
+        return $("SET " + left + " = " + right);
     }
 
     /**
@@ -2022,10 +1929,10 @@ public class JpqlHelper {
             sb.delete(pos, fi);
         }
         logger.debug("JPQL:{}", sb.toString());
-        while (sb.charAt(0) == ' ') {
+        while (sb.length() > 0 && sb.charAt(0) == ' ') {
             sb.delete(0, 1);
         }
-        while (sb.charAt(sb.length() - 1) == ' ') {
+        while (sb.length() > 0 && sb.charAt(sb.length() - 1) == ' ') {
             sb.delete(sb.length() - 1, sb.length());
         }
         return sb.toString();
