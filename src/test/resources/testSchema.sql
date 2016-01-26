@@ -7,6 +7,7 @@ CREATE TABLE member(
   id         IDENTITY primary key,
   name       VARCHAR(20) not null unique,
   userType   VARCHAR(1) not null,
+  version   datetime not null default CURRENT_TIMESTAMP,
   constraint member_ck1 CHECK userType in ('C','V','W')
 );
 INSERT INTO member(name,userType) values('Jose','C');

@@ -98,16 +98,6 @@ public interface DaoRepository<E> {
     public E update(E entity);
 
     /**
-     * update entity with lockMode<br/>
-     * 以指定的層級鎖定更新物件
-     *
-     * @param entity
-     * @param lockMode
-     * @return merged entity/更新後的物件
-     */
-    public E update(E entity, String lockMode);
-
-    /**
      * update multipal entities<br/>
      * 一次更新多個物件
      *

@@ -21,19 +21,22 @@ import org.testng.annotations.Test;
 import springdao.model.Member;
 import springdao.reposotory.RepositoryManagerExt;
 import springdao.support.JpqlHelper;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.number.OrderingComparison.greaterThan;
+import static org.hamcrest.number.OrderingComparison.greaterThanOrEqualTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import springdao.model.Admin;
+import springdao.model.Storage;
 import springdao.reposotory.CustomManager;
+import springdao.support.AbstractSpringDao;
 import springdao.support.DaoPropertyEditor;
+import springdao.support.IntDaoPropertyEditor;
 import springdao.support.LongDaoPropertyEditor;
 
 /**
@@ -42,7 +45,7 @@ import springdao.support.LongDaoPropertyEditor;
  */
 @ContextConfiguration("classpath:testContext.xml")
 @Log4j2
-public class TestDao4j extends AbstractTestNGSpringContextTests{
+public class TestDao4j extends AbstractTestNGSpringContextTests {
 
     @Dao(value = Member.class, name = "annotherDao")
     private AnnotherDaoRepository anotherDao;
@@ -70,15 +73,18 @@ public class TestDao4j extends AbstractTestNGSpringContextTests{
     List<RepositoryManager<Member>> mms = new ArrayList<>();
     RepositoryManager<Member>[] mma;
     @DaoManager
-    private RepositoryManager<Phone> phoneManager;
-    @DaoManager
     private CustomManager<Member> mmC;
     @DaoManager
     private RepositoryManager<Admin> adminManager;
+    @DaoManager
+    private RepositoryManager<Phone> phoneManager;
+    @DaoManager
+    private RepositoryManager<Storage> storageManager;
     List<Member> lazys = new ArrayList<>();
     private final AtomicInteger cnt = new AtomicInteger(0);
-    
+
     private DaoPropertyEditor adminConverter;
+    private IntDaoPropertyEditor storageConverter;
     private LongDaoPropertyEditor memberConverter;
 
     @Dao(value = Member.class, name = "annotherDao2")
@@ -93,6 +99,8 @@ public class TestDao4j extends AbstractTestNGSpringContextTests{
 
     @BeforeClass
     public void setup() {
+        assertThat("Fail to get entity manager factory", anotherDao.getEntityManagerFactory(), is(notNullValue()));
+        assertThat("Fail to get entity manager", anotherDao.getEntityManager(), is(notNullValue()));
         assertThat("setter injection failed.", anotherDao, is(notNullValue()));
 
         assertThat("default RepositoryManager is not assigned.", mm1, is(notNullValue()));
@@ -122,9 +130,10 @@ public class TestDao4j extends AbstractTestNGSpringContextTests{
         mms.add(mmC);
         mma = new RepositoryManager[mms.size()];
         mma = mms.toArray(mma);
-        
+
         adminConverter = new DaoPropertyEditor(adminManager);
         memberConverter = new LongDaoPropertyEditor(mm3);
+        storageConverter = new IntDaoPropertyEditor(storageManager);
     }
 
     @AfterClass
@@ -132,6 +141,43 @@ public class TestDao4j extends AbstractTestNGSpringContextTests{
         for (RepositoryManager<Member> m : mms) {
             m.clear();
         }
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void testCheckDaoConfig1() {
+        new AbstractSpringDao() {
+            @Override
+            public Class getClazz() {
+                return Member.class;
+            }
+        }.afterPropertiesSet();
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void testCheckDaoConfig2() {
+        AbstractSpringDao adao = new AbstractSpringDao() {
+            @Override
+            public Class getClazz() {
+                return Member.class;
+            }
+        };
+        adao.setEntityManagerFactory(anotherDao.getEntityManagerFactory());
+        adao.afterPropertiesSet();
+    }
+
+    @Test
+    public void testCheckDaoConfig3() {
+        AbstractSpringDao adao = new AbstractSpringDao() {
+            @Override
+            public Class getClazz() {
+                return Member.class;
+            }
+        };
+        adao.setEntityManagerFactory(anotherDao.getEntityManagerFactory());
+        adao.setEntityManager(anotherDao.getEntityManager());
+        adao.afterPropertiesSet();
+        assertThat("EntityManager is null", adao.getEntityManager(), is(notNullValue()));
+        RepositoryManager<Member> mgr = mms.get(2);
     }
 
     @Test(invocationCount = 12, threadPoolSize = 5)
@@ -155,51 +201,59 @@ public class TestDao4j extends AbstractTestNGSpringContextTests{
         Member mC = new Member();
         mC.setName("C");
         members.add(mC);
+        Member mD = new Member();
+        mD.setName("D");
+        members.add(mD);
         RepositoryManager<Member> mgr = mms.get(2);
         Collection<Member> ms = mgr.save(members);
-        assertThat("Save Collection failed.", ms, hasSize(3));
+        assertThat("Save Collection failed.", ms, hasSize(4));
         for (Member m : ms) {
             m.setName("x" + m.getName());
         }
         ms = mgr.update(ms);
-        assertThat("Update Collection failed.", ms, hasSize(3));
+        assertThat("Update Collection failed.", ms, hasSize(4));
 
-        Member mD = new Member();
-        mD.setName("xD");
-        ms.add(mD);
+        Member mE = new Member();
+        mE.setName("xE");
+        ms.add(mE);
         ms = mgr.saveOrUpdate(ms);
-        assertThat("SaveOrUpdate Collection failed.", ms, hasSize(4));
+        assertThat("SaveOrUpdate Collection failed.", ms, hasSize(5));
 
-        assertThat("bulkUpdate failed.", 4, is(
-                mgr.bulkUpdate(JpqlHelper.get().update(mgr.$ea()).set().eq(mgr.$a("userType"), "'V'")
-                        .where(mgr.$a("name")).like().quot("x%").ql())));
-        assertThat("bulkUpdate failed.", 4, is(
-                mgr.bulkUpdate(JpqlHelper.get().update(mgr.$ea()).set().eq(mgr.$a("userType"), "'C'")
-                        .where(mgr.$a("name")).like().$("?1").ql(), "x%")));
+        assertThat("bulkUpdate failed.", 5, is(
+                mgr.bulkUpdate(JpqlHelper.get().update(mgr.$ea()).set().eq(mgr.$a("userType"), "?1")
+                        .where(mgr.$a("name")).like().quot("x%").ql(),SupplyChainMember.V)));
+        Map<String,Object> map =new HashMap<>(2);
+        map.put("name", "x%");
+        map.put("userType", SupplyChainMember.C);
+        assertThat("bulkUpdate failed.", 5, is(
+                mgr.bulkUpdate(JpqlHelper.get().update(mgr.$ea()).set().eq(mgr.$a("userType"), ":userType")
+                        .where(mgr.$a("name")).like().$(":name").ql(), map)));
         List<String> qls = new ArrayList<>();
         qls.add(JpqlHelper.get().update(mgr.$ea()).set().eq(mgr.$a("userType"), "'V'")
                 .where(mgr.$a("name")).like().quot("x%").ql());
-        assertThat("bulkUpdate failed.", 4, is(
+        assertThat("bulkUpdate failed.", 5, is(
                 mgr.bulkUpdate(qls).get(0)));
     }
 
     @Test(dependsOnMethods = "testColelction")
     public void testRemoveCollection() {
         RepositoryManager<Member> mgr = mms.get(2);
-        Member member = mgr.findFirstByCriteria(JpqlHelper.get().where("name= ?1").ql(), "xD");
-        assertThat("Can't find member['xD']", member, is(notNullValue()));
+        Member member = mgr.findFirstByCriteria(JpqlHelper.get().where("name= ?1").ql(), "xE");
+        assertThat("Can't find member['xE']", member, is(notNullValue()));
         member = mgr.remove(member);
         assertThat("Rmove member failed", member, is(notNullValue()));
+        member = mgr.findFirstByCriteria(JpqlHelper.get().where("name= ?1").ql(), "xD");
+        assertThat("Can't find member['xD']", member, is(notNullValue()));
+        mgr.delete(member.getId());
         member = mgr.findFirstByCriteria(JpqlHelper.get().where("name= ?1").ql(), "xC");
         assertThat("Can't find member['xC']", member, is(notNullValue()));
-        mgr.delete(member.getId());
-
-        member = mgr.findFirstByCriteria(JpqlHelper.get().where("name= ?1").ql(), "xB");
-        assertThat("Can't find member['xB']", member, is(notNullValue()));
         List<Long> ids = new ArrayList<>();
         ids.add(member.getId());
         mgr.delete(ids);
-
+        
+        member = mgr.findFirstByCriteria(JpqlHelper.get().where("name= ?1").ql(), "xB");
+        assertThat("Can't find member['xB']", member, is(notNullValue()));
+        mgr.remove(member,DaoManager.LOCK_PESSIMISTIC_WRITE);
         Collection<Member> mms = mgr.findByCriteria(JpqlHelper.get().where("name").like().quot("x%").ql());
         assertThat("Can't find member like 'x%'", mms, hasSize(greaterThan(0)));
         mms = mgr.remove(mms);
@@ -283,9 +337,9 @@ public class TestDao4j extends AbstractTestNGSpringContextTests{
         assertThat("can't find member:" + ql, member, is(notNullValue()));
         member.setName(String.format("testModify%02d", idx));
         if (idx % 2 == 0) {
-            mm.update(member);
+                mm.update(member);
         } else {
-            mm.merge(member);
+                mm.merge(member);
         }
     }
 
@@ -329,10 +383,23 @@ public class TestDao4j extends AbstractTestNGSpringContextTests{
         String ql = JpqlHelper.get().where("name ='testModify%02d'").orderBy("name").format(idx);
         Member member = mm.findFirstByCriteria(ql);
         assertThat("can't find member:" + ql, member, is(notNullValue()));
-        mm.delete(member.getId());
+        if (member.getId() % 2 == 0) {
+            mm.delete(member.getId());
+        } else {
+            mm.delete(member.getId(), DaoManager.LOCK_OPTIMISTIC);
+        }
         assertThat(String.format("test remove 'testModify%02d' faild", idx), mm.findFirstByCriteria(ql), is(nullValue()));
     }
 
+    @Test
+    public void testRefresh() {
+        Member member = new Member(1l);
+        RepositoryManager<Member> mgr = mms.get(4);
+        assertThat("refresh failed", mgr.refresh(member).getName(), is(notNullValue()));
+        member = new Member(2l);
+        assertThat("refresh failed", mgr.refresh(member,DaoManager.LOCK_PESSIMISTIC_READ).getName(), is(notNullValue()));
+    }
+    
     @Test
     public void testOrphanRemove() {
         String name = "Newbie";
@@ -401,7 +468,6 @@ public class TestDao4j extends AbstractTestNGSpringContextTests{
         RepositoryManager<Member> mgr = mms.get(2);
         assertThat("Can't find phones from memberManager",
                 mgr.findListByNamedQuery(Phone.class, "Phone.findNativeAll"), hasSize(greaterThanOrEqualTo(2)));
-        log.debug("***************Phone.findNativeByNumber1.size()={}",mgr.findListByNamedQuery(Phone.class, "Phone.findNativeByNumber1", "7777777 ").size());
         assertThat("Can't find phones from memberManager  by postition",
                 mgr.findListByNamedQuery(Phone.class, "Phone.findNativeByNumber1", 7777777l), hasSize(greaterThanOrEqualTo(1)));
         assertThat("Can't find phones from memberManager  by postition",
@@ -409,12 +475,15 @@ public class TestDao4j extends AbstractTestNGSpringContextTests{
     }
 
     @Test
-    public void testConverter(){
+    public void testConverter() {
         adminConverter.setAsText("kentyeh");
-        assertThat("Can't convert string to Admin object.",adminConverter.getAsText(),is("Admin(kentyeh)"));
+        assertThat("Can't convert string to Admin object.", adminConverter.getAsText(), is("Admin(kentyeh)"));
         memberConverter.setAsText("1");
-        assertThat("Can't convert string to Phone object.",memberConverter.getAsText(),is("Jose[1] is Customer"));
+        assertThat("Can't convert string to Phone object.", memberConverter.getAsText(), is("Jose[1] is Customer"));
+        storageConverter.setAsText("1");
+        assertThat("Can't convert string to Phone object.", storageConverter.getAsText(), is("Taipei[1]"));
     }
+
     @Test(dependsOnMethods = "checkNew")
     public void testFindUniqueByQL() {
         int i = 0;

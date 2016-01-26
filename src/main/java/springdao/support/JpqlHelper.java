@@ -48,7 +48,7 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper $c() {
-        sb.append(",");
+        sb.append(" ,");
         return this;
     }
 
@@ -77,12 +77,23 @@ public class JpqlHelper {
     }
 
     /**
-     * add (..string..)
+     * add &quot;(..string..)&quot;
      *
      * @param s
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper $90(String s) {
+        sb.append("(").append(s).append(") ");
+        return this;
+    }
+    
+    /**
+     * add &quot;<span style="background-color:yellow">&nbsp;</span>(..string..)&quot;
+     *
+     * @param s
+     * @return {@link JpqlHelper this}
+     */
+    public JpqlHelper $s90(String s) {
         sb.append(" (").append(s).append(") ");
         return this;
     }
@@ -231,17 +242,18 @@ public class JpqlHelper {
     public JpqlHelper when() {
         return $("WHEN");
     }
-
+    
     /**
      * append a string
-     * <span style="color:blue">,WHEN</span>.<br/>
-     * 加入一個<span style="color:blue">,WHEN</span>字串
+     * <span style="color:blue">THEN</span>.<br/>
+     * 加入一個<span style="color:blue">THEN</span>字串
      *
      * @return {@link JpqlHelper this}
      */
-    public JpqlHelper cWhen() {
-        return $(",WHEN");
+    public JpqlHelper then() {
+        return $("THEN");
     }
+
 
     /**
      * append a string
@@ -332,7 +344,7 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper delete(String entity) {
-        return $("DELETE FROM" + entity);
+        return $("DELETE FROM " + entity);
     }
 
     /**
@@ -356,30 +368,7 @@ public class JpqlHelper {
     public JpqlHelper join(String other) {
         return $("JOIN " + other);
     }
-
-    /**
-     * append a string <span style="color:blue">OUTER JOIN</span>.<br/>
-     * 加入一個<span style="color:blue">OUTER JOIN</span>字串
-     *
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper outeJoin() {
-        return $("OUTER JOIN");
-    }
-
-    /**
-     * append a string <span style="color:blue">OUTER
-     * JOIN</span>&nbsp;<span style="color:#FF8000">other</span>.<br/>
-     * 加入一個<span style="color:blue">OUTER
-     * JOIN</span>&nbsp;<span style="color:#FF8000">other</span>字串
-     *
-     * @param other
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper outeJoin(String other) {
-        return $("OUTER JOIN " + other);
-    }
-
+    
     /**
      * append a string <span style="color:blue">INNER JOIN</span>.<br/>
      * 加入一個<span style="color:blue">INNER JOIN</span>字串
@@ -404,26 +393,26 @@ public class JpqlHelper {
     }
 
     /**
-     * append a string <span style="color:blue">LEFT JOIN</span>.<br/>
-     * 加入一個<span style="color:blue">LEFT JOIN</span>字串
+     * append a string <span style="color:blue">LEFT OUTER JOIN</span>.<br/>
+     * 加入一個<span style="color:blue">LEFT OUTER JOIN</span>字串
      *
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper leftJoin() {
-        return $("LEFT JOIN");
+        return $("LEFT OUTER JOIN");
     }
 
     /**
-     * append a string <span style="color:blue">LEFT
+     * append a string <span style="color:blue">LEFT&nbsp;OUTER&nbsp;
      * JOIN</span>&nbsp;<span style="color:#FF8000">other</span>.<br/>
-     * 加入一個<span style="color:blue">LEFT
+     * 加入一個<span style="color:blue">LEFT&nbsp;OUTER&nbsp;
      * JOIN</span>&nbsp;<span style="color:#FF8000">other</span>字串
      *
      * @param other
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper leftJoin(String other) {
-        return $("LEFT JOIN " + other);
+        return $("LEFT OUTER JOIN " + other);
     }
 
     /**
@@ -563,7 +552,7 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper True() {
-        return $("TRUE");
+        return $("True");
     }
 
     /**
@@ -573,7 +562,7 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper False() {
-        return $("FALSE");
+        return $("False");
     }
 
     /**
@@ -713,8 +702,19 @@ public class JpqlHelper {
      *
      * @return {@link JpqlHelper this}
      */
-    public JpqlHelper Member() {
+    public JpqlHelper memberOf() {
         return $("MEMBER OF");
+    }
+    
+    /**
+     * append a string
+     * <span style="color:#FF8000">left</span>&nbsp;<span style="color:blue">MEMBER&nbsp;OF</span>&nbsp;<span style="color:#FF8000">right</span>.<br/>
+     * 加入一個<span style="color:#FF8000">left</span>&nbsp;<span style="color:blue">MEMBER&nbsp;OF</span>&nbsp;<span style="color:#FF8000">right</span>字串
+     *
+     * @return {@link JpqlHelper this}
+     */
+    public JpqlHelper memberOf(String left, String right) {
+        return $(left+" MEMBER OF "+right);
     }
 
     /**
@@ -737,6 +737,30 @@ public class JpqlHelper {
      */
     public JpqlHelper cAbs() {
         return $(",ABS");
+    }
+
+    /**
+     * append a string
+     * <span style="color:blue">ABS</span>(<span style="color:#FF8000">field</span>).<br/>
+     * 加入一個<span style="color:blue">ABS</span>(<span style="color:#FF8000">field</span>)字串
+     *
+     * @param field
+     * @return {@link JpqlHelper this}
+     */
+    public JpqlHelper abs(String field) {
+        return $("ABS(" + field + ")");
+    }
+
+    /**
+     * append a string
+     * <span style="color:blue">,ABS</span>(<span style="color:#FF8000">field</span>).<br/>
+     * 加入一個<span style="color:blue">,ABS</span>(<span style="color:#FF8000">field</span>)字串
+     *
+     * @param field
+     * @return {@link JpqlHelper this}
+     */
+    public JpqlHelper cAbs(String field) {
+        return $(",ABS(" + field + ")");
     }
 
     /**
@@ -1155,7 +1179,8 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper count() {
-        return $("COUNT");
+        sb.append(" COUNT");
+        return this;
     }
 
     /**
@@ -1166,7 +1191,8 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper cCount() {
-        return $(",COUNT");
+        sb.append(" ,COUNT");
+        return this;
     }
 
     /**
@@ -1823,6 +1849,19 @@ public class JpqlHelper {
      */
     public JpqlHelper set() {
         return $("SET");
+    }
+    
+    /**
+     * append a string
+     * <span style="color:blue">SET</span>&nbsp;<span style="color:#FF8000">left</span><span style="color:blue">=</span><span style="color:#FF8000">right</span>.<br/>
+     * 加入一個<span style="color:blue">SET</span>&nbsp;<span style="color:#FF8000">left</span><span style="color:blue">=</span><span style="color:#FF8000">right</span>字串
+     *
+     * @param left
+     * @param right
+     * @return {@link JpqlHelper this}
+     */
+    public JpqlHelper set(String left, String right) {
+        return $("SET "+left + " = " + right);
     }
 
     /**

@@ -106,17 +106,6 @@ public class AliasHelper {
     /**
      * get Alias Name
      *
-     * @param obj
-     * @return
-     */
-    public static String $a(Object obj) {
-        Assert.notNull(obj, "Can't get alias name from null object");
-        return $a(obj.getClass());
-    }
-
-    /**
-     * get Alias Name
-     *
      * @param clazz
      * @return
      */

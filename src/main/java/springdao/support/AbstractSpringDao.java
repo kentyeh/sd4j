@@ -81,7 +81,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         }
     }
 
-    private RuntimeException convertException(Exception e) {
+    protected RuntimeException convertException(Exception e) {
         if (e instanceof RuntimeException) {
             RuntimeException res = EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible((RuntimeException) e);
             return res == null ? (RuntimeException) e : res;
@@ -178,19 +178,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     public E update(E entity) {
         return merge(entity);
     }
-
-    @Override
-    public E update(E entity, String lockMode) {
-        try {
-            E result = em.merge(entity);
-            em.flush();
-            em.lock(em, getLockMode(lockMode));
-            return result;
-        } catch (RuntimeException e) {
-            throw convertException(e);
-        }
-    }
-
+    
     @Override
     public Collection<E> update(Collection<E> entities) {
         return merge(entities);
@@ -265,9 +253,8 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     @Override
     public void delete(Serializable primaryKey, String lockMode) {
         try {
-            Object entity = em.find(getClazz(), primaryKey);
+            Object entity = em.find(getClazz(), primaryKey,getLockMode(lockMode));
             if (entity != null) {
-                em.lock(entity, getLockMode(lockMode));
                 em.remove(entity);
                 em.flush();
             }
@@ -305,10 +292,19 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
 
     @Override
     public E remove(E entity, String lockMode) {
-        em.lock(entity, getLockMode(lockMode));
-        em.remove(entity);
-        em.flush();
-        return entity;
+        Object pk = emf.getPersistenceUnitUtil().getIdentifier(entity);
+        if (pk == null) {
+            return null;
+        } else {
+            entity = em.find(getClazz(), pk, getLockMode(lockMode));
+            if (entity == null) {
+                return null;
+            } else {
+                em.remove(entity);
+                em.flush();
+                return entity;
+            }
+        }
     }
 
     @Override
@@ -340,7 +336,12 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     @Override
     public E refresh(E entity) {
         try {
-            em.refresh(entity);
+            if(em.contains(entity))
+                em.refresh(entity);
+            else{
+                Object pk = emf.getPersistenceUnitUtil().getIdentifier(entity);
+                return em.find(getClazz(), pk);
+            }
             return entity;
         } catch (RuntimeException e) {
             throw convertException(e);
@@ -350,7 +351,12 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
     @Override
     public E refresh(E entity, String lockMode) {
         try {
-            em.refresh(entity, getLockMode(lockMode));
+            if (em.contains(entity)) {
+                em.refresh(entity, getLockMode(lockMode));
+            } else {
+                Object pk = emf.getPersistenceUnitUtil().getIdentifier(entity);
+                return em.find(getClazz(), pk, getLockMode(lockMode));
+            }
             return entity;
         } catch (RuntimeException e) {
             throw convertException(e);

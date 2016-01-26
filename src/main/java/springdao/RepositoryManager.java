@@ -77,11 +77,6 @@ public class RepositoryManager<E> {
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public E update(E entity, String lockMode) {
-        return dao == null ? null : dao.update(entity, lockMode);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public Collection<E> update(Collection<E> entities) {
         return dao == null ? null : dao.update(entities);
     }
@@ -136,6 +131,15 @@ public class RepositoryManager<E> {
         return dao.remove(entities);
     }
 
+    public E refresh(E entity) {
+        return dao == null ? null : dao.refresh(entity);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public E refresh(E entity, String lockMode) {
+        return dao == null ? null : dao.refresh(entity, lockMode);
+    }
+    
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public int bulkUpdate(String QL) {
         return dao == null ? null : dao.bulkUpdate(QL);
@@ -148,6 +152,11 @@ public class RepositoryManager<E> {
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public int bulkUpdate(String QL, Object... parameters) {
+        return dao == null ? null : dao.bulkUpdate(QL, parameters);
+    }
+    
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public int bulkUpdate(String QL, Map<String, ?> parameters) {
         return dao == null ? null : dao.bulkUpdate(QL, parameters);
     }
 

@@ -172,18 +172,6 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
-    public Member update(Member entity, String lockMode) {
-        try {
-            Member result = entityManager.merge(entity);
-            entityManager.flush();
-            entityManager.lock(entityManager, getLockMode(lockMode));
-            return result;
-        } catch (RuntimeException e) {
-            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
-        }
-    }
-
-    @Override
     public Collection<Member> update(Collection<Member> entities) {
         return merge(entities);
     }
