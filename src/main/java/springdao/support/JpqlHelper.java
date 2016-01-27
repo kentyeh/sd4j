@@ -22,6 +22,13 @@ public class JpqlHelper {
         return new JpqlHelper();
     }
 
+    /**
+     * Quote string within two single quote &apos;string&apos;.<br/>
+     * 字串前後加單引號
+     *
+     * @param s
+     * @return 's'
+     */
     public static String $q(String s) {
         return "'" + s + "'";
     }
@@ -47,7 +54,7 @@ public class JpqlHelper {
      *
      * @return {@link JpqlHelper this}
      */
-    public JpqlHelper $c() {
+    public JpqlHelper c$() {
         sb.append(" ,");
         return this;
     }
@@ -59,34 +66,63 @@ public class JpqlHelper {
      * @param s
      * @return {@link JpqlHelper this}
      */
-    public JpqlHelper $c(String s) {
+    public JpqlHelper c$(String s) {
         sb.append(",").append(s).append(" ");
         return this;
     }
 
     /**
-     * append string within two single quote &apos;string&apos;.<br/>
+     * Quote string within two single quote &apos;string&apos;.<br/>
      * 用兩個單引號夾住字串
      *
      * @param s
      * @return {@link JpqlHelper this}
      */
-    public JpqlHelper quot(String s) {
+    public JpqlHelper q$(String s) {
         sb.append(" '").append(s).append("' ");
         return this;
     }
 
     /**
-     * add &quot;(..string..)&quot;
+     * add &quot;(..string..)&quot;.<br/>
+     * 將字串置於括號內 &quot;(..string..)&quot;
      *
      * @param s
      * @return {@link JpqlHelper this}
      */
-    public JpqlHelper $90(String s) {
+    public JpqlHelper ps$(String s) {
         while (sb.length() > 0 && sb.charAt(sb.length() - 1) == ' ') {
             sb.delete(sb.length() - 1, sb.length());
         }
         sb.append("(").append(s).append(") ");
+        return this;
+    }
+
+    /**
+     * add left parentheses &quot;&nbsp;(;.<br/>
+     * 加入左括號 &quot;(&quot;
+     *
+     * @return {@link JpqlHelper this}
+     */
+    public JpqlHelper lp$() {
+        while (sb.length() > 0 && sb.charAt(sb.length() - 1) == ' ') {
+            sb.delete(sb.length() - 1, sb.length());
+        }
+        sb.append("(");
+        return this;
+    }
+
+    /**
+     * add right parentheses &quot;)&quot;.<br/>
+     * 加入右括號 &quot;)&quot;
+     *
+     * @return {@link JpqlHelper this}
+     */
+    public JpqlHelper rp$() {
+        while (sb.length() > 0 && sb.charAt(sb.length() - 1) == ' ') {
+            sb.delete(sb.length() - 1, sb.length());
+        }
+        sb.append(")");
         return this;
     }
 
@@ -97,7 +133,7 @@ public class JpqlHelper {
      * @param s
      * @return {@link JpqlHelper this}
      */
-    public JpqlHelper $s90(String s) {
+    public JpqlHelper sps$(String s) {
         sb.append(" (").append(s).append(") ");
         return this;
     }
@@ -437,6 +473,26 @@ public class JpqlHelper {
      */
     public JpqlHelper union() {
         return $("UNION");
+    }
+
+    /**
+     * append a string <span style="color:blue">INTERSECT</span>.<br/>
+     * 加入一個<span style="color:blue">INTERSECT</span>字串
+     *
+     * @return {@link JpqlHelper this}
+     */
+    public JpqlHelper intersect() {
+        return $("INTERSECT");
+    }
+
+    /**
+     * append a string <span style="color:blue">EXCEPT</span>.<br/>
+     * 加入一個<span style="color:blue">EXCEPT</span>字串
+     *
+     * @return {@link JpqlHelper this}
+     */
+    public JpqlHelper except() {
+        return $("EXCEPT");
     }
 
     /**
@@ -1124,6 +1180,17 @@ public class JpqlHelper {
 
     /**
      * append a string
+     * <span style="color:blue">NULLS&nbsp;FIRST</span>.<br/>
+     * 加入一個<span style="color:blue">NULLS&nbsp;FIRST</span>字串
+     *
+     * @return {@link JpqlHelper this}
+     */
+    public JpqlHelper nullsFirst() {
+        return $("NULLS FIRST");
+    }
+
+    /**
+     * append a string
      * <span style="color:blue">ORDER&nbsp;BY&nbsp;<span style="color:#FF8000">fields</span></span>.<br/>
      * 加入一個<span style="color:blue">ORDER&nbsp;BY&nbsp;<span style="color:#FF8000">fields</span></span>字串
      *
@@ -1332,7 +1399,7 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper concat(String first, String second) {
-        return $("CONCAT(" + first + " , " + second + " )");
+        return $("CONCAT(" + first + ", " + second + ")");
     }
 
     /**
@@ -1347,7 +1414,7 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper cConcat(String first, String second) {
-        return $(",CONCAT(" + first + " , " + second + " )");
+        return $(",CONCAT(" + first + ", " + second + ")");
     }
 
     /**
@@ -1363,7 +1430,7 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper substring(String field, int start, int end) {
-        return $("SUBSTRING(" + field + " , " + start + " , " + end + " )");
+        return $("SUBSTRING(" + field + ", " + start + ", " + end + ")");
     }
 
     /**
@@ -1379,7 +1446,7 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper cSubstring(String field, int start, int end) {
-        return $(",SUBSTRING(" + field + " , " + start + " , " + end + " )");
+        return $(",SUBSTRING(" + field + ", " + start + ", " + end + ")");
     }
 
     /**
@@ -1392,7 +1459,7 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper locate(String substr, String field) {
-        return $("LOCATE(" + substr + "," + field + ")");
+        return $("LOCATE(" + substr + ", " + field + ")");
     }
 
     /**
@@ -1405,7 +1472,7 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper cLocate(String substr, String field) {
-        return $(",LOCATE(" + substr + "," + field + ")");
+        return $(",LOCATE(" + substr + ", " + field + ")");
     }
 
     /**
@@ -1505,7 +1572,7 @@ public class JpqlHelper {
      *
      * @return {@link JpqlHelper this}
      */
-    public JpqlHelper currTimeStame() {
+    public JpqlHelper currTimeStamp() {
         return $("CURRENT_TIMESTAMP");
     }
 
@@ -1516,19 +1583,42 @@ public class JpqlHelper {
      *
      * @return {@link JpqlHelper this}
      */
-    public JpqlHelper cCurrTimeStame() {
+    public JpqlHelper cCurrTimeStamp() {
         return $(",CURRENT_TIMESTAMP");
     }
 
     /**
-     * append a string
-     * <span style="color:blue">NEW</span>.<br/>
+     * append a string <span style="color:blue">NEW</span>.<br/>
      * 加入一個<span style="color:blue">NEW</span>字串
      *
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper New() {
         return $("NEW");
+    }
+
+    /**
+     * append &quot;&nbsp;<span style="color:blue">NEW</span>&nbsp;
+     * <span style="color:#FF8000">entityName</span>(<span style="color:#FF8000">field1</span>
+     * [,<span style="color:#FF8000">field2</span>])&nbsp;&quot;.<br/>
+     * 加入&quot;&nbsp;<span style="color:blue">NEW</span>&nbsp;
+     * <span style="color:#FF8000">entityName</span>(<span style="color:#FF8000">field1</span>
+     * [,<span style="color:#FF8000">field2</span>])&nbsp;&quot;
+     *
+     * @param entityName
+     * @param fields
+     * @return NEW entityName,field1[,field2[,field3[...]]]
+     */
+    public JpqlHelper New(String entityName, String... fields) {
+        sb.append(" NEW ").append(entityName).append("(");
+        if (fields != null && fields.length > 0) {
+            int i = 0;
+            for (String field : fields) {
+                sb.append(i++ == 0 ? "" : ", ").append(field);
+            }
+            sb.append(") ");
+        }
+        return this;
     }
 
     /**
@@ -1682,6 +1772,7 @@ public class JpqlHelper {
     }
 
     /**
+     * EclipseLink support:<br/>
      * append a string
      * <span style="color:blue">CAST</span>(<span style="color:#FF8000">field</span>&nbsp;,&nbsp;<span style="color:#FF8000">typeValue</span>).<br/>
      * 加入一個<span style="color:blue">CAST</span>(<span style="color:#FF8000">field</span>&nbsp;,&nbsp;<span style="color:#FF8000">typeValue</span>)字串
@@ -1691,23 +1782,11 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper cast(String field, String typeValue) {
-        return $("CAST(" + field + "," + typeValue + ")");
+        return $("CAST(" + field + ", " + typeValue + ")");
     }
 
     /**
-     * append a string
-     * <span style="color:blue">,CAST</span>(<span style="color:#FF8000">field</span>&nbsp;,&nbsp;<span style="color:#FF8000">typeValue</span>).<br/>
-     * 加入一個<span style="color:blue">,CAST</span>(<span style="color:#FF8000">field</span>&nbsp;,&nbsp;<span style="color:#FF8000">typeValue</span>)字串
-     *
-     * @param field
-     * @param typeValue
-     * @return {@link JpqlHelper this}
-     */
-    public JpqlHelper cCast(String field, String typeValue) {
-        return $(",CAST(" + field + "," + typeValue + ")");
-    }
-
-    /**
+     * EclipseLink support:<br/>
      * append a string
      * <span style="color:blue">EXTRACT</span>(<span style="color:#FF8000">dt</span>&nbsp;,&nbsp;<span style="color:#FF8000">field</span>).<br/>
      * 加入一個<span style="color:blue">EXTRACT</span>(<span style="color:#FF8000">dt</span>&nbsp;,&nbsp;<span style="color:#FF8000">field</span>)字串
@@ -1717,10 +1796,11 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper extract(String dt, String field) {
-        return $("EXTRACT(" + dt + "," + field + ")");
+        return $("EXTRACT(" + dt + ", " + field + ")");
     }
 
     /**
+     * EclipseLink support:<br/>
      * append a string
      * <span style="color:blue">,EXTRACT</span>(<span style="color:#FF8000">dt</span>&nbsp;,&nbsp;<span style="color:#FF8000">field</span>).<br/>
      * 加入一個<span style="color:blue">,EXTRACT</span>(<span style="color:#FF8000">dt</span>&nbsp;,&nbsp;<span style="color:#FF8000">field</span>)字串
@@ -1730,10 +1810,70 @@ public class JpqlHelper {
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper cExtract(String dt, String field) {
-        return $(",EXTRACT(" + dt + "," + field + ")");
+        return $(",EXTRACT(" + dt + ", " + field + ")");
     }
 
     /**
+     * append &quot;&nbsp;<span style="color:blue">FUNCTION(</span>
+     * <span style="color:#FF8000">name</span>,&nbsp;[<span style="color:#FF8000">value1,
+     * [<span style="color:#FF8000">field2</span>]</span>]&quot;.</br>
+     * 加入&quot;&nbsp;<span style="color:blue">FUNCTION(</span>
+     * <span style="color:#FF8000">name</span>,&nbsp;[<span style="color:#FF8000">value1,
+     * [<span style="color:#FF8000">field2</span>]</span>]&quot;
+     *
+     * @param name
+     * @param values
+     * @return FUNCTION('name',valu1[,valu2[,valu3[...]]])
+     */
+    public JpqlHelper function(String name, String... values) {
+        sb.append(" ").append("FUNCTION('").append(name).append("'");
+        if (values != null && values.length > 0) {
+            for (String value : values) {
+                sb.append(", ").append(value);
+            }
+        }
+        sb.append(")");
+        return this;
+    }
+
+    /**
+     * EclipseLink support:<br/>
+     * OPERATOR is similar to
+     * {@link #function(java.lang.String, java.lang.String...) function()}.<br/>
+     * OPERATOR 相似於
+     * {@link #function(java.lang.String, java.lang.String...) function()}
+     *
+     * @param name
+     * @param values
+     * @return OPERATOR('name',valu1[,valu2[,valu3[...]]])
+     */
+    public JpqlHelper operator(String name, String... values) {
+        sb.append(" ").append("OPERATOR('").append(name).append("'");
+        if (values != null && values.length > 0) {
+            for (String value : values) {
+                sb.append(", ").append(value);
+            }
+        }
+        sb.append(")");
+        return this;
+    }
+
+    /**
+     * append
+     * <span style="color:blue">TREAT</span>(<span style="color:#FF8000">entity</span>).<br/>
+     * 加入
+     * <span style="color:blue">TREAT</span>(<span style="color:#FF8000">entity</span>)
+     * 字串
+     *
+     * @param entity
+     * @return TREAT(entity)
+     */
+    public JpqlHelper treat(String entity) {
+        return $("TREAT(" + entity + ")");
+    }
+
+    /**
+     * EclipseLink support:<br/>
      * append a string <span style="color:blue">REGEXP</span>.<br/>
      * 加入一個<span style="color:blue">REGEXP</span>字串
      *
@@ -1754,6 +1894,35 @@ public class JpqlHelper {
      */
     public JpqlHelper regexp(String field, String regexpr) {
         return $(field + " REGEXP " + regexpr);
+    }
+
+    /**
+     * EclipseLink support:<br/>
+     * append a string
+     * <span style="color:#FF8000">COLUMN</span>('<span style="color:#FF8000">field</span>,&nbsp;<span style="color:#FF8000">entityOrAlias</span>).<br/>
+     * 加入<span style="color:#FF8000">COLUMN</span>('<span style="color:#FF8000">field</span>,&nbsp;<span style="color:#FF8000">entityOrAlias</span>).<br/>字串
+     *
+     * @param field
+     * @param entityOrAlias
+     * @return {@link JpqlHelper this}
+     */
+    public JpqlHelper column(String field, String entityOrAlias) {
+        return $("COLUMN('" + field + "', " + entityOrAlias + ")");
+    }
+
+    /**
+     * EclipseLink support:<br/>
+     * append
+     * <span style="color:blue">TABLE</span>(<span style="color:#FF8000">name</span>).<br/>
+     * 加入
+     * <span style="color:blue">TABLE</span>(<span style="color:#FF8000">name</span>)
+     * 字串
+     *
+     * @param name
+     * @return TABLE('name')
+     */
+    public JpqlHelper table(String name) {
+        return $("TABLE('" + name + "')");
     }
 
     @Override

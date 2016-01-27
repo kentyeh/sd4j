@@ -7,6 +7,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ColumnResult;
 import javax.persistence.ConstructorResult;
+import javax.persistence.Converter;
 import javax.persistence.Entity;
 import javax.persistence.EntityResult;
 import javax.persistence.EnumType;
@@ -81,6 +82,11 @@ public class Member implements Serializable {
     @Size(max = 20)
     @NotNull
     private @Getter @Setter String name;
+    /**
+     * JPA 2.1 support {@link Converter Converter}.see also
+     * <a href="http://www.thoughts-on-java.org/jpa-21-how-to-implement-type-converter/">
+     * How to implement a JPA Attribute Converter</a>
+     */
     @Column(name = "userType")
     @Enumerated(EnumType.STRING)
     @NotNull

@@ -2,7 +2,6 @@ package springdao.support;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.util.Assert;
 
 /**
  *
@@ -107,7 +106,7 @@ public class AliasHelper {
      * get Alias Name
      *
      * @param clazz
-     * @return
+     * @return aliasName
      */
     public static String $a(Class<?> clazz) {
         String aliasName = clazz.getSimpleName();

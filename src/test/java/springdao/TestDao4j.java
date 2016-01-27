@@ -221,7 +221,7 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
 
         assertThat("bulkUpdate failed.", 5, is(
                 mgr.bulkUpdate(JpqlHelper.get().update(mgr.$ea()).set().eq(mgr.$a("userType"), "?1")
-                        .where(mgr.$a("name")).like().quot("x%").ql(),SupplyChainMember.V)));
+                        .where(mgr.$a("name")).like().q$("x%").ql(),SupplyChainMember.V)));
         Map<String,Object> map =new HashMap<>(2);
         map.put("name", "x%");
         map.put("userType", SupplyChainMember.C);
@@ -230,7 +230,7 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
                         .where(mgr.$a("name")).like().$(":name").ql(), map)));
         List<String> qls = new ArrayList<>();
         qls.add(JpqlHelper.get().update(mgr.$ea()).set().eq(mgr.$a("userType"), "'V'")
-                .where(mgr.$a("name")).like().quot("x%").ql());
+                .where(mgr.$a("name")).like().q$("x%").ql());
         assertThat("bulkUpdate failed.", mgr.bulkUpdate(qls).get(0), is(5));
         assertThat("bulkUpdate failed.", mgr.bulkUpdate(qls.get(0)), is(5));
     }
@@ -254,7 +254,7 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
         member = mgr.findFirstByCriteria(JpqlHelper.get().where("name= ?1").ql(), "xB");
         assertThat("Can't find member['xB']", member, is(notNullValue()));
         mgr.remove(member,DaoManager.LOCK_PESSIMISTIC_WRITE);
-        Collection<Member> mms = mgr.findByCriteria(JpqlHelper.get().where("name").like().quot("x%").ql());
+        Collection<Member> mms = mgr.findByCriteria(JpqlHelper.get().where("name").like().q$("x%").ql());
         assertThat("Can't find member like 'x%'", mms, hasSize(greaterThan(0)));
         mms = mgr.remove(mms);
         assertThat("Can't remove member like 'x%'", mms, hasSize(greaterThan(0)));
@@ -524,7 +524,7 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
     @Test(dependsOnMethods = "checkNew")
     public void testFindListByQL2() {
         for (RepositoryManager<Member> m : mms) {
-            List<Object[]> res = m.findListByQL(null, JpqlHelper.get().select(m.$a("name")).$c(m.$a("userType")).from(m.$ea()).ql());
+            List<Object[]> res = m.findListByQL(null, JpqlHelper.get().select(m.$a("name")).c$(m.$a("userType")).from(m.$ea()).ql());
             assertThat("Free QL query wrong", res.size(), is(greaterThan(0)));
             assertThat("Free QL query wrong", (SupplyChainMember) res.get(0)[1], is(anyOf(is(SupplyChainMember.C), is(SupplyChainMember.V), is(SupplyChainMember.W))));
         }
