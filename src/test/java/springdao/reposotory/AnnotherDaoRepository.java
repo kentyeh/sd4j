@@ -338,6 +338,60 @@ public class AnnotherDaoRepository extends DaoSupport implements DaoRepository<M
     }
 
     @Override
+    public int sqlUpdate(String sql) {
+        try {
+            return entityManager.createNativeQuery(sql).executeUpdate();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
+    }
+
+    @Override
+    public int sqlUpdate(String sql, Object... parameters) {
+        try {
+            int i = 0;
+            Query query = entityManager.createNativeQuery(sql);
+            if (parameters != null && parameters.length > 0) {
+                for (Object paramter : parameters) {
+                    query.setParameter(++i, paramter);
+                }
+            }
+            return query.executeUpdate();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
+    }
+
+    @Override
+    public int sqlUpdate(String sql, Map<String, ?> parameters) {
+        try {
+            int i = 0;
+            Query query = entityManager.createNativeQuery(sql);
+            if (parameters != null && !parameters.isEmpty()) {
+                for (Map.Entry<String, ?> entry : parameters.entrySet()) {
+                    query.setParameter(entry.getKey(), entry.getValue());
+                }
+            }
+            return query.executeUpdate();
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
+    }
+
+    @Override
+    public List<Integer> sqlUpdate(List<String> sqls) {
+        try {
+            List<Integer> res = new ArrayList<>(sqls.size());
+            for(String sql : sqls){
+                res.add(entityManager.createNativeQuery(sql).executeUpdate());
+            }
+            return res;
+        } catch (RuntimeException e) {
+            throw EntityManagerFactoryUtils.convertJpaAccessExceptionIfPossible(e);
+        }
+    }
+
+    @Override
     public int bulkUpdate(String QL) {
         try {
             return entityManager.createQuery(QL).executeUpdate();

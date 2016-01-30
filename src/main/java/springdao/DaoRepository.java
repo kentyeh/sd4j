@@ -200,6 +200,14 @@ public interface DaoRepository<E> {
      * @return entity instance/物件
      */
     public E refresh(E entity, String lockMode);
+    
+    public int sqlUpdate(String sql);
+    
+    public int sqlUpdate(String sql, Object... parameters);
+    
+    public int sqlUpdate(String sql, Map<String, ?> parameters);
+    
+    public List<Integer> sqlUpdate(List<String> sqls);
 
     public int bulkUpdate(String QL);
 

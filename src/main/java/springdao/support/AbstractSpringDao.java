@@ -362,6 +362,60 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             throw convertException(e);
         }
     }
+    
+    @Override
+    public int sqlUpdate(String sql) {
+        try {
+            return em.createNativeQuery(sql).executeUpdate();
+        } catch (RuntimeException e) {
+            throw convertException(e);
+        }
+    }
+
+    @Override
+    public int sqlUpdate(String sql, Object... parameters) {
+        try {
+            int i = 0;
+            Query query = em.createNativeQuery(sql);
+            if (parameters != null && parameters.length > 0) {
+                for (Object paramter : parameters) {
+                    query.setParameter(++i, paramter);
+                }
+            }
+            return query.executeUpdate();
+        } catch (RuntimeException e) {
+            throw convertException(e);
+        }
+    }
+
+    @Override
+    public int sqlUpdate(String sql, Map<String, ?> parameters) {
+        try {
+            int i = 0;
+            Query query = em.createNativeQuery(sql);
+            if (parameters != null && !parameters.isEmpty()) {
+                for(Map.Entry<String,?> entry:parameters.entrySet()){
+                    query.setParameter(entry.getKey(), entry.getValue());
+                }
+            }
+            return query.executeUpdate();
+        } catch (RuntimeException e) {
+            throw convertException(e);
+        }
+    }
+    
+    @Override
+    public List<Integer> sqlUpdate(List<String> sqls) {
+        try {
+            List<Integer> res = new ArrayList<>(sqls.size());
+            for (String sql : sqls){
+                res.add(em.createNativeQuery(sql).executeUpdate());
+            }
+            return res;
+        } catch (RuntimeException e) {
+            throw convertException(e);
+        }
+    }
 
     @Override
     public int bulkUpdate(String QL) {
@@ -407,8 +461,8 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             Query query = em.createQuery(QL);
             int i = 0;
             if (parameters != null && !parameters.isEmpty()) {
-                for (String key : parameters.keySet()) {
-                    query.setParameter(key, parameters.get(key));
+                for(Map.Entry<String,?> entry:parameters.entrySet()){
+                    query.setParameter(entry.getKey(), entry.getValue());
                 }
             }
             return query.executeUpdate();
@@ -469,7 +523,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
         try {
             EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
             if (parameters != null && !parameters.isEmpty()) {
-                for (Map.Entry<String, ?> entry : parameters.entrySet()) {
+                for(Map.Entry<String,?> entry:parameters.entrySet()){
                     query.setParameter(entry.getKey(), entry.getValue());
                 }
             }
@@ -578,7 +632,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             Query query = em.createQuery(QL);
             EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
             if (parameters != null && !parameters.isEmpty()) {
-                for (Map.Entry<String, ?> entry : parameters.entrySet()) {
+                for(Map.Entry<String,?> entry:parameters.entrySet()){
                     query.setParameter(entry.getKey(), entry.getValue());
                 }
             }
@@ -622,7 +676,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             Query query = em.createQuery(QL);
             EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
             if (parameters != null && !parameters.isEmpty()) {
-                for (Map.Entry<String, ?> entry : parameters.entrySet()) {
+                for(Map.Entry<String,?> entry:parameters.entrySet()){
                     query.setParameter(entry.getKey(), entry.getValue());
                 }
             }
@@ -680,7 +734,7 @@ public abstract class AbstractSpringDao<E> extends DaoSupport implements DaoRepo
             Query query = em.createNamedQuery(name);
             EntityManagerFactoryUtils.applyTransactionTimeout(query, getEntityManagerFactory());
             if (parameters != null && !parameters.isEmpty()) {
-                for (Map.Entry<String, ?> entry : parameters.entrySet()) {
+                for(Map.Entry<String,?> entry:parameters.entrySet()){
                     query.setParameter(entry.getKey(), entry.getValue());
                 }
             }

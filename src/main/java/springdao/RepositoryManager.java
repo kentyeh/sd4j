@@ -141,6 +141,26 @@ public class RepositoryManager<E> {
     }
     
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public int sqlUpdate(String sql) {
+        return dao == null ? null : dao.sqlUpdate(sql);
+    }
+    
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public int sqlUpdate(String sql, Object... parameters) {
+        return dao == null ? null : dao.sqlUpdate(sql, parameters);
+    }
+    
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public int sqlUpdate(String sql, Map<String, ?>parameters) {
+        return dao == null ? null : dao.sqlUpdate(sql, parameters);
+    }
+    
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
+    public List<Integer> sqlUpdate(List<String> sqls) {
+        return dao == null ? null : dao.sqlUpdate(sqls);
+    }
+    
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public int bulkUpdate(String QL) {
         return dao == null ? null : dao.bulkUpdate(QL);
     }

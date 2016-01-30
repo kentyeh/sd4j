@@ -233,6 +233,17 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
                 .where(mgr.$a("name")).like().q$("x%").ql());
         assertThat("bulkUpdate failed.", mgr.bulkUpdate(qls).get(0), is(5));
         assertThat("bulkUpdate failed.", mgr.bulkUpdate(qls.get(0)), is(5));
+        assertThat("sqlUpdate failed", mgr.sqlUpdate("UPDATE member SET userType='C' WHERE name like 'x%'"
+                + ";UPDATE member SET userType='V' WHERE name like 'x%'"), is(5));
+        assertThat("sqlUpdate failed",mgr.sqlUpdate("UPDATE member SET userType= ?1 WHERE name like ?2", "C","x%"),is(5));
+        map.clear();
+        map.put("userType","V");
+        map.put(("name"), "x%");
+        assertThat("sqlUpdate failed",mgr.sqlUpdate("UPDATE member SET userType= :userType WHERE name like :name", map),is(5));
+        qls.clear();
+        qls.add("UPDATE member SET userType='C' WHERE name like 'x%'");
+        qls.add("UPDATE member SET userType='V' WHERE name like 'x%'");
+        assertThat("sqlUpdate failed", mgr.sqlUpdate(qls) , hasSize(2));
     }
 
     @Test(dependsOnMethods = "testColelction")
