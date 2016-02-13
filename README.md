@@ -7,7 +7,7 @@
 SD4J is a easy way to using JPA in spring framework.
 
 ## maven
-```
+```xml
 <dependency>
     <groupId>com.github.kentyeh</groupId>
     <artifactId>sd4j</artifactId>
@@ -18,24 +18,24 @@ or download from [maven site](http://search.maven.org/#search%7Cga%7C1%7Cg:%22co
 
 ## Configure
 ### XML Configure
-```
+```xml
 <!-- processing @Dao and @DaoManager-->
 <bean class="springdao.DaoAnnotationBeanPostProcessor"/>
 ```
 or
 ### JAVA Configure
-```
+```java
 @Configuration
 public class ApplicationContext{
     @Bean
-    public DaoAnnotationBeanPostProce daoAnnotationBeanPostProce() {
-        return new DaoAnnotationBeanPostProce();
+    public DaoAnnotationBeanPostProcessor daoAnnotationBeanPostProce() {
+        return new DaoAnnotationBeanPostProcessor();
     }
 }
 ```
 ## Examples
 ### ex.1 Inject direct.
-```
+```java
 public String App(){
     // Where Phone is a jpa entity
     @DaoManager(Phone.class)
@@ -46,7 +46,7 @@ public String App(){
 }
 ```
 ### ex2. Custom business manager
-```
+```java
 @Transactional(readOnly = true)
 public class CustomManager<E> extends RepositoryManager<E>{
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
@@ -55,7 +55,7 @@ public class CustomManager<E> extends RepositoryManager<E>{
     }
 }
 ```
-```
+```java
 public String App(){
   @DaoManager
   private CustomManager<Phone> phoneManager;
@@ -71,7 +71,7 @@ Other example look [TestDao4j.java](https://github.com/kentyeh/sd4j/blob/master/
 Spring web mvc help type conversion.
 
 for example: convert primitive String or int  to jpa entity.
-```
+```java
 import springdao.DaoManager;
 import springdao.RepositoryManager;
 import springdao.support.DaoPropertyEditor;
