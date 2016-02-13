@@ -124,7 +124,7 @@ public class TestJpqlHeloer {
 
     @Test
     public void testUpdate() {
-        assertThat($().update().$("Tab").set().$("nField").eq().$("3").where("bField").eq().True().ql(),
+        assertThat($().update().$("Tab").set().$("nField").eq("3").where("bField").eq().True().ql(),
                 is("UPDATE Tab SET nField = 3 WHERE bField = True"));
     }
 
@@ -136,19 +136,19 @@ public class TestJpqlHeloer {
 
     @Test
     public void testDelete() {
-        assertThat($().delete().$("Tab").where().$("nField").eq().$("3").where("bField").not().True().ql(),
+        assertThat($().delete().$("Tab").where().$("nField").eq("3").where("bField").not().True().ql(),
                 is("DELETE FROM Tab WHERE nField = 3 WHERE bField NOT True"));
     }
 
     @Test
     public void testDelete2() {
-        assertThat($().delete("Tab").where().$("nField").eq().$("3").where("1=1").and().$("2=2").ql(),
+        assertThat($().delete("Tab").where().$("nField").eq("3").where("1=1").and().$("2=2").ql(),
                 is("DELETE FROM Tab WHERE nField = 3 WHERE 1=1 AND 2=2"));
     }
 
     @Test
     public void testJoin() {
-        assertThat($().select().$("F1").from("Tab1").join().$("Tab2").on().eq("Tab1.id", "Tab2.id").where("F1").eq().$("3").or().eq("F1", "5").ql(),
+        assertThat($().select().$("F1").from("Tab1").join().$("Tab2").on().eq("Tab1.id", "Tab2.id").where("F1").eq("3").or().eq("F1", "5").ql(),
                 is("SELECT F1 FROM Tab1 JOIN Tab2 ON Tab1.id = Tab2.id WHERE F1 = 3 OR F1 = 5"));
     }
 

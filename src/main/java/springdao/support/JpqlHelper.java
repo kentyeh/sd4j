@@ -771,6 +771,8 @@ public class JpqlHelper {
      * <span style="color:#FF8000">left</span>&nbsp;<span style="color:blue">MEMBER&nbsp;OF</span>&nbsp;<span style="color:#FF8000">right</span>.<br/>
      * 加入一個<span style="color:#FF8000">left</span>&nbsp;<span style="color:blue">MEMBER&nbsp;OF</span>&nbsp;<span style="color:#FF8000">right</span>字串
      *
+     * @param left
+     * @param right
      * @return {@link JpqlHelper this}
      */
     public JpqlHelper memberOf(String left, String right) {
@@ -1749,6 +1751,18 @@ public class JpqlHelper {
 
     /**
      * append a string
+     * <span style="color:blue">=</span><span style="color:#FF8000">right</span>.<br/>
+     * 加入一個<span style="color:blue">=</span><span style="color:#FF8000">right</span>字串
+     *
+     * @param right
+     * @return {@link JpqlHelper this}
+     */
+    public JpqlHelper eq(String right) {
+        return $(" = " + right);
+    }
+
+    /**
+     * append a string
      * <span style="color:#FF8000">left</span><span style="color:blue">=</span><span style="color:#FF8000">right</span>.<br/>
      * 加入一個<span style="color:#FF8000">left</span><span style="color:blue">=</span><span style="color:#FF8000">right</span>字串
      *
@@ -1816,7 +1830,7 @@ public class JpqlHelper {
     /**
      * append &quot;&nbsp;<span style="color:blue">FUNCTION(</span>
      * <span style="color:#FF8000">name</span>,&nbsp;[<span style="color:#FF8000">value1,
-     * [<span style="color:#FF8000">field2</span>]</span>]&quot;.</br>
+     * [<span style="color:#FF8000">field2</span>]</span>]&quot;.<br/>
      * 加入&quot;&nbsp;<span style="color:blue">FUNCTION(</span>
      * <span style="color:#FF8000">name</span>,&nbsp;[<span style="color:#FF8000">value1,
      * [<span style="color:#FF8000">field2</span>]</span>]&quot;
@@ -1927,10 +1941,9 @@ public class JpqlHelper {
 
     @Override
     public String toString() {
-        int fi = 0, pos = -1;
-        while ((pos = sb.indexOf("  ", fi)) != -1) {
-            fi = pos + 1;
-            sb.delete(pos, fi);
+        int pos = 0;
+        while ((pos = sb.indexOf("  ", pos)) != -1) {
+            sb.delete(pos, pos + 1);
         }
         logger.debug("JPQL:{}", sb.toString());
         while (sb.length() > 0 && sb.charAt(0) == ' ') {

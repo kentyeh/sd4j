@@ -53,7 +53,9 @@ import lombok.Setter;
             @ColumnResult(name = "userType_E", type = String.class),
             @ColumnResult(name = "version", type = java.util.Date.class)
         })
-    })
+    }//addition columns,額外的欄位
+     //, columns = {@ColumnResult(name = "contactCount",type = Long.class)}
+)
 @NamedQueries({
     @NamedQuery(name = "Member.findAll", query = "SELECT m FROM Member m"),
     @NamedQuery(name = "Member.findByName1", query = "SELECT m FROM Member m WHERE m.name like ?1 ORDER BY m.id"),
