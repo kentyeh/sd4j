@@ -47,7 +47,7 @@ import springdao.support.LongDaoPropertyEditor;
 @Log4j2
 public class TestDao4j extends AbstractTestNGSpringContextTests {
 
-    @Dao(value = Member.class, name = "annotherDao")
+    @Dao(Member.class)
     private AnnotherDaoRepository anotherDao;
     @DaoManager(name = "MM1", daoName = "annotherDao")
     private RepositoryManager<Member> mm1;
@@ -67,9 +67,9 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
     private AnnotatedRepositoryManagerExt<Member> mm8;
     @DaoManager(name = "MM9", baseManagerType = AnnotatedRepositoryManagerExt.class)
     private AnnotatedRepositoryManager<Member> mm9;
-    @DaoManager(name = "MMA", baseManagerType = AnnotatedRepositoryManager.class)
+    @DaoManager(name = "MMA")
     private AnnotatedRepositoryManagerExt<Member> mmA;
-    private RepositoryManager<Member> mmB;
+    private AnnotatedRepositoryManager mmB;
     List<RepositoryManager<Member>> mms = new ArrayList<>();
     RepositoryManager<Member>[] mma;
     @DaoManager
@@ -87,13 +87,13 @@ public class TestDao4j extends AbstractTestNGSpringContextTests {
     private IntDaoPropertyEditor storageConverter;
     private LongDaoPropertyEditor memberConverter;
 
-    @Dao(value = Member.class, name = "annotherDao2")
+    @Dao(Member.class)
     public void setAnotherDao2(AnnotherDaoRepository anotherDao2) {
         this.anotherDao = anotherDao2;
     }
 
-    @DaoManager(name = "MMB", baseManagerType = AnnotatedRepositoryManager.class)
-    public void setMmB(RepositoryManager<Member> mmB) {
+    @DaoManager(Member.class)
+    public void setMmB(AnnotatedRepositoryManager mmB) {
         this.mmB = mmB;
     }
 
