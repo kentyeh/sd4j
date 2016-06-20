@@ -88,11 +88,14 @@
         <prop key="hibernate.bytecode.provider">javassist</prop>
         <prop key="hibernate.query.substitutions">true 'Y', false 'N'</prop>
         <!--prop key="hibernate.hbm2ddl.auto">update</prop-->
+        <!--Hazelcast server configure,自帶Hazelcast主機設定-->
         <prop key="hibernate.cache.region.factory_class">springdao.HazelcastCacheRegionFactory</prop>
-        <prop key="hibernate.cache.hazelcast.use_native_client">false</prop>
+        <!--Hazelcast CLient configurate only, 僅使用 Client 設定-->
+        <!--<prop key="hibernate.cache.hazelcast.use_native_client">true</prop>
+        <prop key="hibernate.cache.region.factory_class">com.hazelcast.hibernate.HazelcastLocalCacheRegionFactory</prop>
         <prop key="hibernate.cache.hazelcast.native_client_hosts">#{appProperies['hazelcast.cluster']}</prop>
         <prop key="hibernate.cache.hazelcast.native_client_group">#{appProperies['hazelcast.groupName']}</prop>
-        <prop key="hibernate.cache.hazelcast.native_client_password">#{appProperies['hazelcast.groupPass']}</prop>
+        <prop key="hibernate.cache.hazelcast.native_client_password">#{appProperies['hazelcast.groupPass']}</prop>-->
         <prop key="hibernate.generate_statistics">true</prop>
         <prop key="hibernate.cache.use_structured_entries">true</prop>
 
