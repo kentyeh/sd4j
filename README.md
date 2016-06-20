@@ -11,7 +11,7 @@ SD4J is a easy way to using JPA in spring framework.
 <dependency>
     <groupId>com.github.kentyeh</groupId>
     <artifactId>sd4j</artifactId>
-    <version>1.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 or download from [maven site](http://search.maven.org/#search%7Cga%7C1%7Cg:%22com.github.kentyeh%22%20AND%20a:%22sd4j%22)
