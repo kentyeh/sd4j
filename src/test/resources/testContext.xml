@@ -6,11 +6,13 @@
        xmlns:util="http://www.springframework.org/schema/util"
        xmlns:tx="http://www.springframework.org/schema/tx"
        xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:hz="http://www.hazelcast.com/schema/spring"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
-       http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
+       http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
+       http://www.hazelcast.com/schema/spring http://www.hazelcast.com/schema/spring/hazelcast-spring.xsd">
     <context:annotation-config/> 
     <tx:annotation-driven/>
     <!-- processing @Dao and @DaoManager-->
@@ -28,7 +30,11 @@
         <entry key="jdbc.maxWait" value="5000" />
         <entry key="jdbc.validationQuery" value="SELECT 1" />
         <entry key="jdbc.testOnBorrow" value="true" />
+        <entry key="hazelcast.cluster" value="127.0.0.1" />
+        <entry key="hazelcast.groupName" value="springHibernate" />
+        <entry key="hazelcast.groupPass" value="password" />
     </util:map>
+    <!--DBCP2 DataSource configuration; DBCP2 DataSource設定-->
     <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close"
           p:driverClassName="#{appProperies['jdbc.driverClassName']}" p:url="#{appProperies['jdbc.url']}" 
           p:username="#{appProperies['jdbc.username']}" p:password="#{appProperies['jdbc.password']}"
@@ -36,8 +42,8 @@
           p:maxIdle="#{appProperies['jdbc.maxIdle']}" p:minIdle="#{appProperies['jdbc.minIdle']}"
           p:maxWaitMillis="#{appProperies['jdbc.maxWait']}" p:validationQuery="#{appProperies['jdbc.validationQuery']}"
           p:testOnBorrow="#{appProperies['jdbc.testOnBorrow']}"/>
-    
-     <bean id="alternativeDataSource" class="org.h2.jdbcx.JdbcConnectionPool" destroy-method="dispose">
+    <!--H2 Datsource configuration; H2 DataSource設定-->
+    <bean id="alternativeDataSource" class="org.h2.jdbcx.JdbcConnectionPool" destroy-method="dispose">
         <constructor-arg>
             <bean class="org.h2.jdbcx.JdbcDataSource">
                 <property name="URL" value="#{appProperies['jdbc.url']}"/>
@@ -51,20 +57,49 @@
         <jdbc:script location="classpath:testSchema.sql" encoding="UTF-8" execution="INIT"/>
     </jdbc:initialize-database>
 
+    <!-- Hazelcast configuration-->
+    <hz:hazelcast id="hazelcastInstance">
+        <hz:config>
+            <hz:instance-name>springHibernate</hz:instance-name>
+            <hz:group name="#{appProperies['hazelcast.groupName']}" password="#{appProperies['hazelcast.groupPass']}"/>
+            <hz:properties >
+                <hz:property name="hazelcast.logging.type">log4j2</hz:property>
+            </hz:properties>
+            <hz:network port="5701" port-auto-increment="false">
+                <hz:join>
+                    <hz:multicast enabled="false"/>
+                    <hz:tcp-ip enabled="true">
+                        <hz:members>#{appProperies['hazelcast.cluster']}</hz:members>
+                    </hz:tcp-ip>
+                </hz:join> 
+            </hz:network>
+        </hz:config>
+    </hz:hazelcast>
+    
     <util:properties id="hibernateProperties" >
         <prop key="hibernate.dialect">org.hibernate.dialect.H2Dialect</prop>
         <prop key="hibernate.show_sql">false</prop>
+        <prop key="hibernate.format_sql">false</prop>
         <prop key="hibernate.max_fetch_depth">3</prop>
-        <prop key="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</prop>
         <prop key="hibernate.cache.use_query_cache">true</prop>
         <prop key="hibernate.cache.use_second_level_cache">true</prop>
+        <prop key="hibernate.cache.use_minimal_puts">true</prop>
         <prop key="hibernate.bytecode.use_reflection_optimizer">true</prop>
         <prop key="hibernate.bytecode.provider">javassist</prop>
         <prop key="hibernate.query.substitutions">true 'Y', false 'N'</prop>
-        <!--prop key="hibernate.hbm2ddl.auto">create</prop-->
+        <!--prop key="hibernate.hbm2ddl.auto">update</prop-->
+        <prop key="hibernate.cache.region.factory_class">springdao.HazelcastCacheRegionFactory</prop>
+        <prop key="hibernate.cache.hazelcast.use_native_client">false</prop>
+        <prop key="hibernate.cache.hazelcast.native_client_hosts">#{appProperies['hazelcast.cluster']}</prop>
+        <prop key="hibernate.cache.hazelcast.native_client_group">#{appProperies['hazelcast.groupName']}</prop>
+        <prop key="hibernate.cache.hazelcast.native_client_password">#{appProperies['hazelcast.groupPass']}</prop>
+        <prop key="hibernate.generate_statistics">true</prop>
+        <prop key="hibernate.cache.use_structured_entries">true</prop>
+
+        <prop key="javax.persistence.sharedCache.mode">ENABLE_SELECTIVE</prop>
     </util:properties>
     
-    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean" depends-on="hazelcastInstance">
         <property name="dataSource" ref="dataSource"/>
         <property name="packagesToScan" value="springdao.model"/>
         <property name="jpaDialect">
