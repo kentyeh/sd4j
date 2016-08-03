@@ -144,10 +144,10 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
         <maven.compiler.optimize>true</maven.compiler.optimize>
-        <org.springframework.version>4.3.0.RELEASE</org.springframework.version>
+        <org.springframework.version>4.3.2.RELEASE</org.springframework.version>
         <org.hibernate.version>5.1.0.Final</org.hibernate.version>
         <hibernate.validator.version>5.2.4.Final</hibernate.validator.version>
-        <log4j.version>2.6.1</log4j.version>
+        <log4j.version>2.6.2</log4j.version>
         <maven.test.skip>false</maven.test.skip>
     </properties>
 
@@ -252,7 +252,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.16.8</version>
+            <version>1.16.10</version>
             <scope>test</scope>
         </dependency>
         <dependency>
