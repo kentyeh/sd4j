@@ -4,6 +4,7 @@
 [![Coverage Status](http://img.shields.io/coveralls/kentyeh/sd4j/master.svg?style=flat-square)](https://coveralls.io/github/kentyeh/sd4j)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.kentyeh/sd4j/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.kentyeh/sd4j)
 [![Javadocs](http://www.javadoc.io/badge/com.github.kentyeh/sd4j.svg?color=blue)](http://www.javadoc.io/doc/com.github.kentyeh/sd4j)
+[![Contributor](http://wsbadge.herokuapp.com/badge/Developer-Kent%20Yeh-oragnle.svg)](https://github.com/kentyeh)
 
 SD4J is a easy way to using JPA in spring framework.
 
