@@ -44,6 +44,12 @@
     <profiles>
         <profile>
             <id>release</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
             <distributionManagement>
                 <snapshotRepository>
                     <id>ossrh</id>
@@ -144,10 +150,10 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
         <maven.compiler.optimize>true</maven.compiler.optimize>
-        <org.springframework.version>4.3.2.RELEASE</org.springframework.version>
-        <org.hibernate.version>5.1.0.Final</org.hibernate.version>
-        <hibernate.validator.version>5.2.4.Final</hibernate.validator.version>
-        <log4j.version>2.6.2</log4j.version>
+        <org.springframework.version>4.3.3.RELEASE</org.springframework.version>
+        <org.hibernate.version>5.1.2.Final</org.hibernate.version>
+        <hibernate.validator.version>5.3.1.Final</hibernate.validator.version>
+        <log4j.version>2.7</log4j.version>
         <maven.test.skip>false</maven.test.skip>
     </properties>
 
@@ -203,13 +209,13 @@
         <dependency>    
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast-spring</artifactId>
-            <version>3.7-EA</version>
+            <version>3.7.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>    
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast-hibernate5</artifactId>
-            <version>1.0</version>
+            <version>1.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -228,7 +234,7 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>6.9.10</version>
+            <version>6.9.13.6</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -306,7 +312,7 @@
                     <optimize>true</optimize>
                 </configuration>
             </plugin>
-            <plugin>
+            <plugin><!--Not Work-->
                 <groupId>org.hibernate.orm.tooling</groupId>
                 <artifactId>hibernate-enhance-maven-plugin</artifactId>
                 <version>${org.hibernate.version}</version>
@@ -372,7 +378,7 @@
             <plugin>
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
-                <version>4.2.0</version>
+                <version>4.3.0</version>
                 <configuration>
                     <repoToken>t8lWRxW9p5DmHgSl8BQPNqS6yU14Vagqn</repoToken>
                 </configuration>
