@@ -4,7 +4,7 @@ CREATE TABLE supervisor(
 );
 INSERT INTO supervisor(account,password) values('kentyeh','password');
 CREATE TABLE member(
-  id         IDENTITY primary key,
+  id         bigint auto_increment PRIMARY KEY,
   name       VARCHAR(20) not null unique,
   userType   VARCHAR(1) not null,
   version   datetime not null default CURRENT_TIMESTAMP,
@@ -15,7 +15,7 @@ INSERT INTO member(name,userType) values('RooBeck','C');
 INSERT INTO member(name,userType) values('Kent Yeh','V');
 INSERT INTO member(name,userType) values('WareHouse','W');
 CREATE TABLE phone(
-  id        IDENTITY primary key,
+  id        bigint auto_increment primary key,
   uid       BIGINT,
   phone     varchar(15) not null,
   constraint phone_fk1 FOREIGN KEY(uid) REFERENCES member(id) ON UPDATE CASCADE ON DELETE SET NULL
